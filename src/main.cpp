@@ -7,10 +7,19 @@
 
 std::string read_file_contents(const std::string& filename);
 
+void printError(int line, std::string c){
+    std::cerr << "[line " << line << "] Error: Unexpected character: " << c <<'\n';
+}
 
 void printTokens(std::vector<Token> tokens){
     for(Token token:tokens){
-        std::cout << Token::tokenString(token) << '\n';
+        std::string token_str = Token::tokenString(token);
+        if(token_str=="UNKNOWN_TOKEN"){
+            printError(token._line,token.lexeme);
+        }else{
+            std::cout << token_str << '\n';
+        }
+        
     }
 }
 

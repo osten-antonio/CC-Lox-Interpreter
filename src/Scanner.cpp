@@ -45,6 +45,6 @@ void Scanner::scanToken(){
       case '+': addToken(PLUS); break;
       case ';': addToken(SEMICOLON); break;
       case '*': addToken(STAR); break; 
-      default:  std::cout << "[line " << line << "] Error: Unexpected character: " << c << "\n"; break;
+      default: addToken(ERR); break;
     }
 }

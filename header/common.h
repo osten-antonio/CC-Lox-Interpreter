@@ -50,7 +50,8 @@ enum TokenType
     WHILE,
     FOR,
 
-    END_OF_FILE
+    END_OF_FILE,
+    ERR
 
 };
 
@@ -196,6 +197,9 @@ public:
                 break;
             case END_OF_FILE:
                 return "EOF  null";
+                break;
+            default:
+                return "UNKNOWN_TOKEN";
                 break;
         }
     }
