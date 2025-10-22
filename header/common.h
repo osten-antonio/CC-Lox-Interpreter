@@ -60,19 +60,23 @@ class Token
 public:
     enum TokenType tokenType;
     std::string lexeme;
-
+    std::string _literal;
     size_t _line;
 
-    Token(TokenType type, const std::string &data, size_t line)
+    Token(TokenType type, const std::string &data, const std::string &literal, size_t line)
     {
         tokenType = type;
         lexeme = data;
+        _literal = literal;
         _line = line;
     }
 
     std::string toString() const
     {
-        return {std::to_string(tokenType) + " " + lexeme};
+        if(tokenType == ERR){
+            return "UNKNOWN_TOKEN";
+        }
+        return {tokenString(*this) + " " + lexeme + " " + _literal};
     }
 
 
@@ -80,128 +84,89 @@ public:
     {
         switch (token.tokenType)
         {
-
             case LEFT_PAREN:
-                return "LEFT_PAREN ( null";
-                break;
+                return "LEFT_PAREN";
             case RIGHT_PAREN:
-                return "RIGHT_PAREN ) null";
+                return "RIGHT_PAREN";
                 break;
             case LEFT_BRACE:
-                return "LEFT_BRACE { null";
-                break;
+                return "LEFT_BRACE";
             case RIGHT_BRACE:
-                return "RIGHT_BRACE } null";
-                break;
+                return "RIGHT_BRACE";
             case COMMA:
-                return "COMMA , null";
-                break;
+                return "COMMA";
             case DOT:
-                return "DOT . null";
-                break;
+                return "DOT";
             case MINUS:
-                return "MINUS - null";
-                break;
+                return "MINUS";
             case PLUS:
-                return "PLUS + null";
-                break;
+                return "PLUS";
             case SEMICOLON:
-                return "SEMICOLON ; null";
-                break;
+                return "SEMICOLON";
             case SLASH:
-                return "SLASH / null";
-                break;
+                return "SLASH";
             case STAR:
-                return "STAR * null";
-                break;
+                return "STAR";
             case BANG:
-                return "BANG ! null";
-                break;
+                return "BANG";
             case BANG_EQUAL:
-                return "BANG_EQUAL != null";
-                break;
+                return "BANG_EQUAL";
             case EQUAL:
-                return "EQUAL = null";
-                break;
+                return "EQUAL";
             case EQUAL_EQUAL:
-                return "EQUAL_EQUAL == null";
-                break;
+                return "EQUAL_EQUAL";
             case GREATER:
-                return "GREATER > null";
-                break;
+                return "GREATER";
             case GREATER_EQUAL:
-                return "GREATER_EQUAL >= null";
-                break;
+                return "GREATER_EQUAL";
             case LESS:
-                return "LESS < null";
-                break;
+                return "LESS";
             case LESS_EQUAL:
-                return "LESS_EQUAL <= null";
-                break;
+                return "LESS_EQUAL";
             case IDENTIFIER:
                 return "IDENTIFIER";
-                break;
             case STRING:
                 return "STRING";
-                break;
             case NUMBER:
                 return "NUMBER";
-                break;
             case AND:
                 return "AND";
-                break;
             case OR:
                 return "OR";
-                break;
             case IF:
                 return "IF";
-                break;
             case ELSE:
                 return "ELSE";
-                break;
             case TRUE:
                 return "TRUE";
-                break;
             case FALSE:
                 return "FALSE";
-                break;
             case FUN:
                 return "FUN";
-                break;
             case CLASS:
                 return "CLASS";
-                break;
             case NIL:
                 return "NIL";
-                break;
             case PRINT:
                 return "PRINT";
-                break;
             case RETURN:
                 return "RETURN";
-                break;
             case SUPER:
                 return "SUPER";
-                break;
             case THIS:
                 return "THIS";
-                break;
             case VAR:
                 return "VAR";
-                break;
             case WHILE:
                 return "WHILE";
-                break;
             case FOR:
                 return "FOR";
-                break;
             case END_OF_FILE:
-                return "EOF  null";
-                break;
+                return "EOF";
             default:
                 return "UNKNOWN_TOKEN";
-                break;
         }
+        return std::string();
     }
 };
 

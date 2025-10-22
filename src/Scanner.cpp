@@ -14,7 +14,7 @@ std::vector<Token> Scanner::scanTokens(){
       scanToken();
     }
 
-    tokens.push_back(Token(END_OF_FILE, "", line));
+    tokens.push_back(Token(END_OF_FILE, "", "null",line));
     return tokens;
 }
 
@@ -29,7 +29,7 @@ bool Scanner::isAtEnd(){
 
 void Scanner::addToken(TokenType tokenType){
     std::string text=source.substr(start,1);
-    tokens.push_back(Token(tokenType, text, line));
+    tokens.push_back(Token(tokenType, text,"null", line));
 }
 
 bool Scanner::match(char expected){
@@ -55,7 +55,7 @@ void Scanner::scanToken(){
       case '!': addToken(match('=') ? BANG_EQUAL : BANG); break;
       case '=': addToken(match('=') ? EQUAL_EQUAL : EQUAL); break;
       case '<': addToken(match('=') ? LESS_EQUAL : LESS); break;
-      case '>': addToken(match('=') ? GREATER_EQUAL : GREATER);
+      case '>': addToken(match('=') ? GREATER_EQUAL : GREATER); break;
       default: addToken(ERR); break;
     }
 }

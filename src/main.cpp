@@ -14,10 +14,10 @@ void printError(int line, std::string c){
 
 void printTokens(std::vector<Token> tokens){
     for(Token token:tokens){
-        std::string token_str = Token::tokenString(token);
+        std::string token_str = token.toString();
         if(token_str=="UNKNOWN_TOKEN"){
             printError(token._line,token.lexeme);
-            hadError = true;
+            
         }else{
             std::cout << token_str << '\n';
         }
