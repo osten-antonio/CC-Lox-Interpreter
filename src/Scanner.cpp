@@ -27,7 +27,7 @@ bool Scanner::isAtEnd(){
 }
 
 void Scanner::addToken(TokenType tokenType){
-    std::string text=source.substr(start,current);
+    std::string text=source.substr(start,1);
     tokens.push_back(Token(tokenType, text, line));
 }
 

@@ -1,7 +1,3 @@
-//
-// Created by atilas on 4.2.25..
-//
-
 #ifndef CODECRAFTERS_INTERPRETER_COMMON_H
 #define CODECRAFTERS_INTERPRETER_COMMON_H
 
@@ -112,10 +108,10 @@ public:
                 return "SEMICOLON ; null";
                 break;
             case SLASH:
-                return "SLASH";
+                return "SLASH / null";
                 break;
             case STAR:
-                return "STAR";
+                return "STAR * null";
                 break;
             case BANG:
                 return "BANG";
