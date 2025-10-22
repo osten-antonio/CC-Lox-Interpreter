@@ -28,12 +28,12 @@ bool Scanner::isAtEnd(){
 }
 
 void Scanner::addToken(TokenType tokenType){
-    std::string text=source.substr(start,1);
+    std::string text=source.substr(start,current-start);
     tokens.push_back(Token(tokenType, text,"null", line));
 }
 
 bool Scanner::match(char expected){
-    if(isAtEnd()) false;
+    if(isAtEnd()) return false;
     if(source[current]!=expected) return false;
     current++;
     return true;
