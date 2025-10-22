@@ -17,6 +17,7 @@ void printTokens(std::vector<Token> tokens){
         std::string token_str = Token::tokenString(token);
         if(token_str=="UNKNOWN_TOKEN"){
             printError(token._line,token.lexeme);
+            hadError = true;
         }else{
             std::cout << token_str << '\n';
         }
