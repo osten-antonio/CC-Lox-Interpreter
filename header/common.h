@@ -115,28 +115,28 @@ public:
                 return "STAR * null";
                 break;
             case BANG:
-                return "BANG";
+                return "BANG ! null";
                 break;
             case BANG_EQUAL:
-                return "BANG_EQUAL";
+                return "BANG_EQUAL != null";
                 break;
             case EQUAL:
-                return "EQUAL";
+                return "EQUAL = null";
                 break;
             case EQUAL_EQUAL:
-                return "EQUAL_EQUAL";
+                return "EQUAL_EQUAL == null";
                 break;
             case GREATER:
-                return "GREATER";
+                return "GREATER > null";
                 break;
             case GREATER_EQUAL:
-                return "GREATER_EQUAL";
+                return "GREATER_EQUAL >= null";
                 break;
             case LESS:
-                return "LESS";
+                return "LESS < null";
                 break;
             case LESS_EQUAL:
-                return "LESS_EQUAL";
+                return "LESS_EQUAL <= null";
                 break;
             case IDENTIFIER:
                 return "IDENTIFIER";
