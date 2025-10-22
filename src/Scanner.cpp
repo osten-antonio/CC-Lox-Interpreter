@@ -1,5 +1,6 @@
 #include <Scanner.h>
 #include <stdexcept>
+#include <iostream>
 
 Scanner::Scanner(const std::string &string)
 {
@@ -44,5 +45,6 @@ void Scanner::scanToken(){
       case '+': addToken(PLUS); break;
       case ';': addToken(SEMICOLON); break;
       case '*': addToken(STAR); break; 
+      default:  std::cout << "[line " << line << "] Error: Unexpected character: " << c << "\n";
     }
 }
