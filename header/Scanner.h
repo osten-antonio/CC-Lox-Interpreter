@@ -28,6 +28,9 @@ public:
     void addToken(TokenType tokenType);
 
     void scanToken();
+
+private:
+    bool match(char expected);
 };
 
 
