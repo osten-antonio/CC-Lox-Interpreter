@@ -3,14 +3,22 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <Scanner.h>
 
 std::string read_file_contents(const std::string& filename);
+
+
+void printTokens(std::vector<Token> tokens){
+    for(Token token:tokens){
+        std::cout << Token::tokenString(token) << '\n';
+    }
+}
 
 int main(int argc, char *argv[]) {
     // Disable output buffering
     std::cout << std::unitbuf;
     std::cerr << std::unitbuf;
-
+    std::vector<Token> tokens;
     // You can use print statements as follows for debugging, they'll be visible when running tests.
     std::cerr << "Logs from your program will appear here!" << std::endl;
 
@@ -26,11 +34,10 @@ int main(int argc, char *argv[]) {
         
         // Uncomment this block to pass the first stage
         
-        if (!file_contents.empty()) {
-            std::cerr << "Scanner not implemented" << std::endl;
-            return 1;
-        }
-        std::cout << "EOF  null" << std::endl; // Placeholder, replace this line when implementing the scanner
+        Scanner* scanner= new Scanner(file_contents);
+        tokens = scanner->scanTokens();
+
+        printTokens(tokens);
         
     } else {
         std::cerr << "Unknown command: " << command << std::endl;
