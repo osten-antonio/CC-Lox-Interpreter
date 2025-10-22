@@ -6,6 +6,7 @@
 #include <Scanner.h>
 
 std::string read_file_contents(const std::string& filename);
+bool hadError = false;
 
 void printError(int line, std::string c){
     std::cerr << "[line " << line << "] Error: Unexpected character: " << c <<'\n';
@@ -52,7 +53,7 @@ int main(int argc, char *argv[]) {
         std::cerr << "Unknown command: " << command << std::endl;
         return 1;
     }
-
+    if (hadError) return 65;
     return 0;
 }
 
