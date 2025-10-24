@@ -2,6 +2,24 @@
 #include <stdexcept>
 #include <iostream>
 #include <bits/stdc++.h>
+#include <unordered_map>
+
+std::unordered_map<std::string,TokenType> reserved = {
+    {"and",AND},
+    {"or",OR},
+    {"if",IF},
+    {"else",ELSE},
+    {"fun",FUN},
+    {"true",TRUE},
+    {"false",FALSE},
+    {"class",CLASS},
+    {"return", RETURN},
+    {"super", SUPER},
+    {"this",THIS},
+    {"var", VAR},
+    {"while",WHILE},
+    {"for",FOR}
+};
 
 Scanner::Scanner(const std::string &string)
 {
@@ -86,7 +104,11 @@ bool Scanner::isAlphanumberic(char c){
 
 void Scanner::identifier(){
     while(isAlphanumberic(peek())) advance();
-
+    std::string value = source.substr(start,current-start);
+    if(reserved.find(value) != reserved.end()){
+        addToken(reserved[value]);
+        return;
+    }
     addToken(IDENTIFIER);
 }
 
