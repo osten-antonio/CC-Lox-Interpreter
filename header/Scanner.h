@@ -31,6 +31,7 @@ public:
 
 private:
     bool match(char expected);
+    char peek();
 };
 
 

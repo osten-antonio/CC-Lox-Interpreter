@@ -22,6 +22,10 @@ char Scanner::advance(){
     return source[current++];
 }
 
+char Scanner::peek(){
+    if(isAtEnd()) return '\0';
+    return source[current];
+}
 
 bool Scanner::isAtEnd(){
     return current >= source.size();
@@ -56,6 +60,11 @@ void Scanner::scanToken(){
       case '=': addToken(match('=') ? EQUAL_EQUAL : EQUAL); break;
       case '<': addToken(match('=') ? LESS_EQUAL : LESS); break;
       case '>': addToken(match('=') ? GREATER_EQUAL : GREATER); break;
+      case '/':
+        if(match('/')){
+            while(peek()!='\n' && !isAtEnd()) advance();
+        } else addToken(SLASH);
+        break;
       default: addToken(ERR); break;
     }
 }
