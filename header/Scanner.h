@@ -25,7 +25,7 @@ public:
 
     char advance();
 
-    void addToken(TokenType tokenType, std::string value);
+    void addToken(TokenType tokenType, Literal value);
     void addToken(ErrorType errorType, std::string data);
 
     void scanToken();
@@ -33,7 +33,9 @@ public:
 private:
     bool match(char expected);
     char peek();
+    char peekNext();
     void string();
+    void number();
 };
 
 

@@ -3,7 +3,9 @@
 
 #include <list>
 #include <string>
-#include <optional>
+#include <variant>
+#include <sstream>
+#include <iomanip>
 
 enum ErrorType{
     NONE,
@@ -61,16 +63,18 @@ enum TokenType
 
 };
 
+using Literal = std::variant<std::monostate, std::string, double, bool>;
+
 class Token
 {
 public:
     enum TokenType tokenType;
     std::string lexeme;
-    std::string _literal;
+    Literal _literal;
     size_t _line;
     ErrorType error;
 
-    Token(TokenType type, const std::string &data, const std::string &literal, size_t line, ErrorType errorType=ErrorType::NONE)
+    Token(TokenType type, const std::string &data, const Literal &literal, size_t line, ErrorType errorType=ErrorType::NONE)
     {
         tokenType = type;
         lexeme = data;
@@ -84,7 +88,31 @@ public:
         if(tokenType == ERR){
             return "ERR " + lexeme;
         }
-        return {tokenString(*this) + " " + lexeme + " " + _literal};
+
+        std::string literalStr;
+        std::visit([&](auto&& arg) {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, std::monostate>) {
+                literalStr = "null";
+            } else if constexpr (std::is_same_v<T, std::string>) {
+                literalStr = arg;
+            } else if constexpr (std::is_same_v<T, double>) {
+                std::ostringstream oss;
+                oss << std::setprecision(15);
+                oss << arg;
+
+                std::string s = oss.str();
+
+                // Ensure at least 1 decimal point (eg 1 -> 1.0)
+                if (s.find('.') == std::string::npos && s.find('e') == std::string::npos) {
+                    s += ".0";
+                }
+                literalStr = s;
+            } else if constexpr (std::is_same_v<T, bool>) {
+                literalStr = arg ? "true" : "false";
+            }
+        }, _literal);
+        return {tokenString(*this) + " " + lexeme + " " + literalStr};
     }
 
 

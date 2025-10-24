@@ -1,6 +1,7 @@
 #include <Scanner.h>
 #include <stdexcept>
 #include <iostream>
+#include <bits/stdc++.h>
 
 Scanner::Scanner(const std::string &string)
 {
@@ -27,6 +28,11 @@ char Scanner::peek(){
     return source[current];
 }
 
+char Scanner::peekNext(){
+    if(current+1 >= source.length() ||isAtEnd()) return '\0';
+    return source[current+1];
+}
+
 void Scanner::string(){
     while(peek()!='"' && !isAtEnd()){
         if(peek()=='\n') line++;
@@ -41,13 +47,22 @@ void Scanner::string(){
     addToken(STRING, value);
 }
 
+void Scanner::number(){
+    while(std::isdigit(peek())) advance();
+    if(peek()=='.' && std::isdigit(peekNext())){
+        advance();
+        while(std::isdigit(peek())) advance();
+    }
+    addToken(NUMBER,stod(source.substr(start,current-start)));
+}
+
 bool Scanner::isAtEnd(){
     return current >= source.size();
 }
 
-void Scanner::addToken(TokenType tokenType, std::string value="null"){
+void Scanner::addToken(TokenType tokenType, Literal value="null"){
     std::string text=source.substr(start,current-start);
-    tokens.push_back(Token(tokenType, text,value, line));
+    tokens.push_back(Token(tokenType, text,Literal(value), line));
 }
 
 void Scanner::addToken(ErrorType errorType, std::string data){
@@ -60,6 +75,7 @@ bool Scanner::match(char expected){
     current++;
     return true;
 }
+
 
 void Scanner::scanToken(){
     char c = advance();
@@ -89,6 +105,11 @@ void Scanner::scanToken(){
       case '\t':break;
       case '\n':line++;break;
 
-      default: addToken(UNKNOWN_SYMBOL,std::string(1,c)); break;
+      default: 
+        if(std::isdigit(c)){
+            number();
+        }else{
+            addToken(UNKNOWN_SYMBOL,std::string(1,c)); break;
+        }
     }
 }
