@@ -18,7 +18,8 @@ std::unordered_map<std::string,TokenType> reserved = {
     {"this",THIS},
     {"var", VAR},
     {"while",WHILE},
-    {"for",FOR}
+    {"for",FOR},
+    {"nil",NIL}
 };
 
 Scanner::Scanner(const std::string &string)
