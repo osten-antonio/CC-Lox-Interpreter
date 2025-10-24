@@ -65,6 +65,11 @@ void Scanner::scanToken(){
             while(peek()!='\n' && !isAtEnd()) advance();
         } else addToken(SLASH);
         break;
+      case ' ':
+      case '\r':
+      case '\t':break;
+      case '\n':line++;break;
+      
       default: addToken(ERR); break;
     }
 }
