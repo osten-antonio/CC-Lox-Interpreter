@@ -76,6 +76,20 @@ bool Scanner::match(char expected){
     return true;
 }
 
+bool Scanner::isAlpha(char c){
+    return ((c>='a' && c<='z') || (c >= 'A' && c <= 'Z') || c == '_');
+}
+
+bool Scanner::isAlphanumberic(char c){
+    return std::isdigit(c) || isAlpha(c);
+}
+
+void Scanner::identifier(){
+    while(isAlphanumberic(peek())) advance();
+
+    addToken(IDENTIFIER);
+}
+
 
 void Scanner::scanToken(){
     char c = advance();
@@ -106,10 +120,8 @@ void Scanner::scanToken(){
       case '\n':line++;break;
 
       default: 
-        if(std::isdigit(c)){
-            number();
-        }else{
-            addToken(UNKNOWN_SYMBOL,std::string(1,c)); break;
-        }
+        if(std::isdigit(c)) number();
+        else if(isAlpha(c)) identifier();
+        else addToken(UNKNOWN_SYMBOL,std::string(1,c)); break;
     }
 }

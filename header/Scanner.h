@@ -34,8 +34,14 @@ private:
     bool match(char expected);
     char peek();
     char peekNext();
+
     void string();
     void number();
+    void identifier();
+
+    bool isAlpha(char c);
+    bool isAlphanumberic(char c);
+    
 };
 
 
