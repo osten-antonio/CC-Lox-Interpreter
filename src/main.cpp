@@ -8,17 +8,29 @@
 std::string read_file_contents(const std::string& filename);
 bool hadError = false;
 
-void printError(int line, std::string c){
+void errorUnknownSymb(int line, std::string c){
     std::cerr << "[line " << line << "] Error: Unexpected character: " << c <<'\n';
+}
+
+void errorUnterminatedStr(int line){
+    std::cerr <<"[line " << line << "] Error: Unterminated string." << '\n';
 }
 
 void printTokens(std::vector<Token> tokens){
     for(Token token:tokens){
-        std::string token_str = token.toString();
-        if(token_str=="UNKNOWN_TOKEN"){
-            printError(token._line,token.lexeme);
+        if(token.error!=ErrorType::NONE){
+            switch (token.error)
+            {
+            case UNKNOWN_SYMBOL:
+                errorUnknownSymb(token._line,token.lexeme);
+                break;
+            case UNTERMINATED_STRING:
+                errorUnterminatedStr(token._line);
+                break;
+            }
             hadError=true;
         }else{
+            std::string token_str = token.toString();
             std::cout << token_str << '\n';
         }
         

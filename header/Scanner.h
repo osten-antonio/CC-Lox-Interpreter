@@ -25,13 +25,15 @@ public:
 
     char advance();
 
-    void addToken(TokenType tokenType);
+    void addToken(TokenType tokenType, std::string value);
+    void addToken(ErrorType errorType, std::string data);
 
     void scanToken();
 
 private:
     bool match(char expected);
     char peek();
+    void string();
 };
 
 

@@ -27,13 +27,31 @@ char Scanner::peek(){
     return source[current];
 }
 
+void Scanner::string(){
+    while(peek()!='"' && !isAtEnd()){
+        if(peek()=='\n') line++;
+        advance();
+    }
+    if(isAtEnd()){
+        addToken(UNTERMINATED_STRING, ""); 
+        return;
+    }
+    advance(); // Closing "
+    std::string value = source.substr(start + 1, current-start-2);
+    addToken(STRING, value);
+}
+
 bool Scanner::isAtEnd(){
     return current >= source.size();
 }
 
-void Scanner::addToken(TokenType tokenType){
+void Scanner::addToken(TokenType tokenType, std::string value="null"){
     std::string text=source.substr(start,current-start);
-    tokens.push_back(Token(tokenType, text,"null", line));
+    tokens.push_back(Token(tokenType, text,value, line));
+}
+
+void Scanner::addToken(ErrorType errorType, std::string data){
+    tokens.push_back(Token(ERR, data,"null", line, errorType));
 }
 
 bool Scanner::match(char expected){
@@ -60,6 +78,7 @@ void Scanner::scanToken(){
       case '=': addToken(match('=') ? EQUAL_EQUAL : EQUAL); break;
       case '<': addToken(match('=') ? LESS_EQUAL : LESS); break;
       case '>': addToken(match('=') ? GREATER_EQUAL : GREATER); break;
+      case '"': string(); break;
       case '/':
         if(match('/')){
             while(peek()!='\n' && !isAtEnd()) advance();
@@ -69,7 +88,7 @@ void Scanner::scanToken(){
       case '\r':
       case '\t':break;
       case '\n':line++;break;
-      
-      default: addToken(ERR); break;
+
+      default: addToken(UNKNOWN_SYMBOL,std::string(1,c)); break;
     }
 }

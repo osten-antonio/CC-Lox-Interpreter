@@ -3,7 +3,13 @@
 
 #include <list>
 #include <string>
+#include <optional>
 
+enum ErrorType{
+    NONE,
+    UNKNOWN_SYMBOL,
+    UNTERMINATED_STRING
+};
 
 enum TokenType
 {
@@ -62,19 +68,21 @@ public:
     std::string lexeme;
     std::string _literal;
     size_t _line;
+    ErrorType error;
 
-    Token(TokenType type, const std::string &data, const std::string &literal, size_t line)
+    Token(TokenType type, const std::string &data, const std::string &literal, size_t line, ErrorType errorType=ErrorType::NONE)
     {
         tokenType = type;
         lexeme = data;
         _literal = literal;
         _line = line;
+        error=errorType;
     }
 
     std::string toString() const
     {
         if(tokenType == ERR){
-            return "UNKNOWN_TOKEN";
+            return "ERR " + lexeme;
         }
         return {tokenString(*this) + " " + lexeme + " " + _literal};
     }
