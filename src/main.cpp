@@ -91,7 +91,8 @@ int main(int argc, char *argv[]) {
 
         if(parsedExpression!=nullptr){
             Interpreter interpreter;
-            interpreter.interpret(*parsedExpression);
+            int res = interpreter.interpret(*parsedExpression);
+            if(res==-1) return 70;
         }else{
             return 65;
         }

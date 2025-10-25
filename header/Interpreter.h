@@ -7,7 +7,7 @@
 class Interpreter{
 
 public:
-    void interpret(const Expression& expr);
+    int interpret(const Expression& expr);
 
 private:
     Literal evaluate(const Expression& expr);

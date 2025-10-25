@@ -1,5 +1,17 @@
 #include <Interpreter.h>
 #include <iostream>
+#include <exception>
+
+struct RuntimeError: public std::exception{
+    std::string message;
+    Token token;
+    RuntimeError(Token _token, const std::string& msg)
+        : token(_token), message(msg) {}
+
+    const char* what() const noexcept override {
+        return message.c_str();
+    }
+};
 
 struct InterpreterVisitor{
     bool isEqual(Literal a, Literal b){
@@ -24,6 +36,16 @@ struct InterpreterVisitor{
         return true;
     }
 
+    void checkNumberOperands(Literal operand, Token op){
+        if(std::holds_alternative<double>(operand)) return;
+        throw RuntimeError(op,"Operand must be a number.");
+    }
+
+    void checkNumberOperands(Literal left, Literal right, Token op){
+        if(std::holds_alternative<double>(left) && std::holds_alternative<double>(right)) return;
+        throw RuntimeError(op,"Operand must be a number.");
+    }
+
     Literal operator()(const BinaryExpression& expr){
         Literal left = std::visit(*this,*expr.left);
         Token op = expr.op;
@@ -37,23 +59,26 @@ struct InterpreterVisitor{
             if(std::holds_alternative<std::string>(left) && std::holds_alternative<std::string>(right)){
                 return std::get<std::string>(left)+std::get<std::string>(right);
             }
-            break;
         case MINUS:
+            checkNumberOperands(left,right,op);
             return std::get<double>(left)-std::get<double>(right);
-            break;
         case STAR:
+            checkNumberOperands(left,right,op);
             return std::get<double>(left)*std::get<double>(right);
-            break;
         case SLASH:
+            checkNumberOperands(left,right,op);
             return std::get<double>(left)/std::get<double>(right);
-            break;
         case GREATER:
+            checkNumberOperands(left,right,op);
             return std::get<double>(left)>std::get<double>(right);
         case GREATER_EQUAL:
+            checkNumberOperands(left,right,op);
             return std::get<double>(left)>=std::get<double>(right);
         case LESS:
+            checkNumberOperands(left,right,op);
             return std::get<double>(left)<std::get<double>(right);
         case LESS_EQUAL:
+            checkNumberOperands(left,right,op);
             return std::get<double>(left)<=std::get<double>(right);
         case BANG_EQUAL:
             return !isEqual(left,right);
@@ -70,6 +95,7 @@ struct InterpreterVisitor{
         switch (expr.op.tokenType)
         {
         case MINUS:
+            checkNumberOperands(right,expr.op);
             return -std::get<double>(right);
             break;
         case BANG:
@@ -89,18 +115,24 @@ struct InterpreterVisitor{
 
 
 
-void Interpreter::interpret(const Expression& expr){
-    Literal value = evaluate(expr);
-    std::visit([&](auto&& arg) {
-        using T = std::decay_t<decltype(arg)>;
-        if constexpr (std::is_same_v<T, std::monostate>) {
-            std::cout << "nil" << '\n';
-        } else if constexpr (std::is_same_v<T, bool>) {
-            std::cout << (arg ? "true" : "false") << '\n';
-        } else {
-            std::cout << arg << '\n';
-        }
-    }, value);
+int Interpreter::interpret(const Expression& expr){
+    try{
+        Literal value = evaluate(expr);
+        std::visit([&](auto&& arg) {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, std::monostate>) {
+                std::cout << "nil" << '\n';
+            } else if constexpr (std::is_same_v<T, bool>) {
+                std::cout << (arg ? "true" : "false") << '\n';
+            } else {
+                std::cout << arg << '\n';
+            }
+        }, value);
+        return 0;
+    } catch (RuntimeError e){
+        return -1;
+    }
+
 }
 
 Literal Interpreter::evaluate(const Expression& expr){
