@@ -80,7 +80,7 @@ struct InterpreterVisitor{
         return std::monostate{};
     }
     Literal operator()(const LiteralExpression& expr){
-        return expr.value;
+        return isTruthy(expr.value);
     }
     Literal operator()(const GroupingExpression& expr){
         return std::visit(*this,*expr.expression);
