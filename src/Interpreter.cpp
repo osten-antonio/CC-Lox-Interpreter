@@ -48,7 +48,7 @@ struct InterpreterVisitor{
             return std::get<double>(left)/std::get<double>(right);
             break;
         case GREATER:
-            return std::get<double>(left)/std::get<double>(right);
+            return std::get<double>(left)>std::get<double>(right);
         case GREATER_EQUAL:
             return std::get<double>(left)>=std::get<double>(right);
         case LESS:
