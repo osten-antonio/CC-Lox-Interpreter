@@ -5,6 +5,7 @@
 #include <string>
 #include <Scanner.h>
 #include <_Parser.h>
+#include <printVisitor.h>
 
 std::string read_file_contents(const std::string& filename);
 bool hadError = false;
@@ -16,6 +17,7 @@ void errorUnknownSymb(int line, std::string c){
 void errorUnterminatedStr(int line){
     std::cerr <<"[line " << line << "] Error: Unterminated string." << '\n';
 }
+
 
 void printTokens(std::vector<Token> tokens){
     for(Token token:tokens){
@@ -70,7 +72,13 @@ int main(int argc, char *argv[]) {
         tokens = scanner->scanTokens();
 
         Parser* parser = new Parser(tokens);
-        parser->print();
+        std::shared_ptr<Expression> parsedExpression= parser->parse();
+
+        if(parsedExpression!=nullptr){
+            std::cout << std::visit(PrintVisitor{}, *parsedExpression) << '\n';
+        }else{
+            return 65;
+        }
     } 
     else {
         std::cerr << "Unknown command: " << command << std::endl;
