@@ -25,6 +25,9 @@ void Parser::print(){
                 std::cout << s << '\n';
                 break;
             }
+            case STRING:
+                std::cout << token.lexeme.substr(1,token.lexeme.length()-2) << '\n';
+                break;
             default:
                 std::cout << token.lexeme << '\n';
 
