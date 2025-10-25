@@ -112,8 +112,11 @@ std::shared_ptr<Expression> Parser::primary(){
     if (match({TRUE})) {
         return std::make_shared<Expression>(LiteralExpression{"true", true});
     }
-    if (match({NUMBER, STRING, NIL})) {
+    if (match({NUMBER, STRING})) {
         return std::make_shared<Expression>(LiteralExpression{previous().lexeme, previous()._literal});
+    }
+    if(match({NIL})){
+            return std::make_shared<Expression>(LiteralExpression{previous().lexeme, "nil"});
     }
     if (match({LEFT_PAREN})) {
         std::shared_ptr<Expression> innerExpr = expression();

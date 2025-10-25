@@ -80,7 +80,7 @@ bool Scanner::isAtEnd(){
     return current >= source.size();
 }
 
-void Scanner::addToken(TokenType tokenType, Literal value="nil"){
+void Scanner::addToken(TokenType tokenType, Literal value="null"){
     std::string text=source.substr(start,current-start);
     tokens.push_back(Token(tokenType, text,Literal(value), line));
 }
