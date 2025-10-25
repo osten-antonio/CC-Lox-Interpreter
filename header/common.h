@@ -117,7 +117,7 @@ public:
         std::visit([&](auto&& arg) {
             using T = std::decay_t<decltype(arg)>;
             if constexpr (std::is_same_v<T, std::monostate>) {
-                literalStr = "null";
+                literalStr = "nil";
             } else if constexpr (std::is_same_v<T, std::string>) {
                 literalStr = arg;
             } else if constexpr (std::is_same_v<T, double>) {
