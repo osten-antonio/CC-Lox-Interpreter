@@ -12,18 +12,16 @@ void Parser::print(){
         switch(token.tokenType){
             case NUMBER:
             {
-                double value = std::stod(token.lexeme);
-
-                // Convert to string using default formatting
                 std::ostringstream oss;
-                oss << value;
+                oss << std::setprecision(15);
+                oss << token.lexeme;
+
                 std::string s = oss.str();
 
-                // Ensure at least one decimal point
+                // Ensure at least 1 decimal point (eg 1 -> 1.0)
                 if (s.find('.') == std::string::npos) {
                     s += ".0";
                 }
-
                 std::cout << s << '\n';
                 break;
             }

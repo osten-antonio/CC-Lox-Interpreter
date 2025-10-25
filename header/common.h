@@ -99,6 +99,7 @@ public:
             } else if constexpr (std::is_same_v<T, double>) {
                 // Convert to string using default formatting
                 std::ostringstream oss;
+                oss << std::setprecision(15);
                 oss << arg;
                 std::string s = oss.str();
 
