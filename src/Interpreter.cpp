@@ -80,7 +80,8 @@ struct InterpreterVisitor{
         return std::monostate{};
     }
     Literal operator()(const LiteralExpression& expr){
-        return isTruthy(expr.value);
+        Literal val = expr.value;
+        return isTruthy(val);
     }
     Literal operator()(const GroupingExpression& expr){
         return std::visit(*this,*expr.expression);
@@ -91,15 +92,16 @@ struct InterpreterVisitor{
 
 void Interpreter::interpret(const Expression& expr){
     Literal value = evaluate(expr);
-        std::visit([&](auto&& arg) {
-            using T = std::decay_t<decltype(arg)>;
-            if constexpr (std::is_same_v<T, std::monostate>) {
-                std::cout << "nil" << '\n';
-            } else{
-                std::cout << arg << '\n';
-            }
-        }, value);
-
+    std::visit([&](auto&& arg) {
+        using T = std::decay_t<decltype(arg)>;
+        if constexpr (std::is_same_v<T, std::monostate>) {
+            std::cout << "nil" << '\n';
+        } else if constexpr (std::is_same_v<T, bool>) {
+            std::cout << (arg ? "true" : "false") << '\n';
+        } else {
+            std::cout << arg << '\n';
+        }
+    }, value);
 }
 
 Literal Interpreter::evaluate(const Expression& expr){
