@@ -46,6 +46,12 @@ struct InterpreterVisitor{
         throw RuntimeError(op,"Operand must be a number.");
     }
 
+    void checkNumberStringOperands(Literal left, Literal right, Token op){
+        if(std::holds_alternative<double>(left) && std::holds_alternative<double>(right)) return;
+        if(std::holds_alternative<std::string>(left) && std::holds_alternative<std::string>(right)) return;
+        throw RuntimeError(op,"Operand must be two numbers or two strings.");
+    }
+
     Literal operator()(const BinaryExpression& expr){
         Literal left = std::visit(*this,*expr.left);
         Token op = expr.op;
@@ -53,6 +59,7 @@ struct InterpreterVisitor{
         switch (op.tokenType)
         {
         case PLUS:
+            checkNumberStringOperands(left,right,op);
             if(std::holds_alternative<double>(left) && std::holds_alternative<double>(right)){
                 return std::get<double>(left)+std::get<double>(right);
             }
@@ -130,6 +137,7 @@ int Interpreter::interpret(const Expression& expr){
         }, value);
         return 0;
     } catch (RuntimeError e){
+        std::cerr << "[line " << e.token._line <<"] " << e.message << '\n';
         return -1;
     }
 
