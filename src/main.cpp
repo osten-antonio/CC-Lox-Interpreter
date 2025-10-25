@@ -6,6 +6,7 @@
 #include <Scanner.h>
 #include <_Parser.h>
 #include <printVisitor.h>
+#include <Interpreter.h>
 
 std::string read_file_contents(const std::string& filename);
 bool hadError = false;
@@ -80,6 +81,21 @@ int main(int argc, char *argv[]) {
             return 65;
         }
     } 
+    else if(command=="evaluate"){
+        std::string file_contents = read_file_contents(argv[2]);
+        Scanner* scanner= new Scanner(file_contents);
+        tokens = scanner->scanTokens();
+
+        Parser* parser = new Parser(tokens);
+        std::shared_ptr<Expression> parsedExpression= parser->parse();
+
+        if(parsedExpression!=nullptr){
+            Interpreter interpreter;
+            interpreter.interpret(*parsedExpression);
+        }else{
+            return 65;
+        }
+    }
     else {
         std::cerr << "Unknown command: " << command << std::endl;
         return 1;
