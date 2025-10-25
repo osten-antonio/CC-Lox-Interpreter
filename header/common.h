@@ -97,17 +97,17 @@ public:
             } else if constexpr (std::is_same_v<T, std::string>) {
                 literalStr = arg;
             } else if constexpr (std::is_same_v<T, double>) {
+                // Convert to string using default formatting
                 std::ostringstream oss;
-                oss << std::setprecision(15);
                 oss << arg;
-
                 std::string s = oss.str();
 
-                // Ensure at least 1 decimal point (eg 1 -> 1.0)
-                if (s.find('.') == std::string::npos && s.find('e') == std::string::npos) {
+                // Ensure at least one decimal point
+                if (s.find('.') == std::string::npos) {
                     s += ".0";
                 }
                 literalStr = s;
+
             } else if constexpr (std::is_same_v<T, bool>) {
                 literalStr = arg ? "true" : "false";
             }
