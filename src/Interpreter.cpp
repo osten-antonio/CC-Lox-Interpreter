@@ -81,7 +81,8 @@ struct InterpreterVisitor{
     }
     Literal operator()(const LiteralExpression& expr){
         Literal val = expr.value;
-        return isTruthy(val);
+        if(std::holds_alternative<std::monostate>(val)) return "nil";
+        else return isTruthy(val);
     }
     Literal operator()(const GroupingExpression& expr){
         return std::visit(*this,*expr.expression);
