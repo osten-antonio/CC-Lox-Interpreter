@@ -4,6 +4,7 @@
 #include <sstream>
 #include <string>
 #include <Scanner.h>
+#include <_Parser.h>
 
 std::string read_file_contents(const std::string& filename);
 bool hadError = false;
@@ -62,7 +63,16 @@ int main(int argc, char *argv[]) {
 
         printTokens(tokens);
         
-    } else {
+    }
+    else if(command=="parse"){
+        std::string file_contents = read_file_contents(argv[2]);
+        Scanner* scanner= new Scanner(file_contents);
+        tokens = scanner->scanTokens();
+
+        Parser* parser = new Parser(tokens);
+        parser->print();
+    } 
+    else {
         std::cerr << "Unknown command: " << command << std::endl;
         return 1;
     }
