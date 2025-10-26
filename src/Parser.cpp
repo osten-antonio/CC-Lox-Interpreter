@@ -114,6 +114,7 @@ std::shared_ptr<Expression> Parser::primary(){
         }        
     }
     Token token = peek();
+
     throw ParseError(token._line,token.lexeme, "Expected expression.");
 }
 std::vector<std::shared_ptr<Statement>> Parser::parse(bool executing) {
@@ -126,10 +127,10 @@ std::vector<std::shared_ptr<Statement>> Parser::parse(bool executing) {
     return statements;
 }
 
-std::shared_ptr<Statement> Parser::statement(bool evaluate){
+std::shared_ptr<Statement> Parser::statement(bool executing){
     if(match({PRINT})) return printStatement();
 
-    return expressionStatement(evaluate);
+    return expressionStatement(executing);
 }   
 
 std::shared_ptr<Statement> Parser::expressionStatement(bool executing){

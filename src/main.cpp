@@ -125,7 +125,7 @@ int main(int argc, char *argv[]) {
 
         Parser* parser = new Parser(tokens);
         try{
-            std::vector<std::shared_ptr<Statement>> statements= parser->parse();
+            std::vector<std::shared_ptr<Statement>> statements= parser->parse(true);
             if (!statements.empty()) {
                 Interpreter interpreter;
                 interpreter.interpretStatements(statements);
