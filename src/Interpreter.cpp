@@ -5,6 +5,8 @@
 #include <_error.h>
 
 struct InterpreterVisitor{
+    Environment& environment;
+    InterpreterVisitor(Environment& env) : environment(env) {}
     bool isEqual(Literal a, Literal b){
         if(std::holds_alternative<std::monostate>(a) && std::holds_alternative<std::monostate>(b)) return true;
         if(std::holds_alternative<std::monostate>(a)) return false;
@@ -109,7 +111,16 @@ struct InterpreterVisitor{
     Literal operator()(const GroupingExpression& expr){
         return std::visit(*this,*expr.expression);
     }
-
+    Literal operator()(const VariableExpression& expr){
+        Literal val = environment.get(expr.name);
+        return val;
+        
+    }
+    Literal operator()(const AssignmentExpression& expr){
+        Literal val = std::visit(*this, *expr.value);
+        environment.assign(expr.name,val);
+        return val;
+    }
 
     // Statement visitors
     void operator()(const PrintStatement& stmt){
@@ -134,12 +145,17 @@ struct InterpreterVisitor{
     void operator()(const ExpressionStatement& stmt){
         std::visit(*this,*stmt.expression);
     }
+    void operator()(const VarStatement& stmt){
+        Literal val;
+        if(stmt.initializer) val=std::visit(*this,*stmt.initializer);
+        environment.define(stmt.identifier,val);
+    }
 
 };
 
 
 void Interpreter::interpretStatements(std::vector<std::shared_ptr<Statement>> stmts){
-    InterpreterVisitor visitor;
+    InterpreterVisitor visitor(environment);
     for(std::shared_ptr<Statement> stmt:stmts){
         try{
             std::visit(visitor, stmt->statement);
@@ -180,6 +196,6 @@ std::variant<std::string,std::monostate> Interpreter::interpret(const Expression
 }
 
 Literal Interpreter::evaluate(const Expression& expr){
-    InterpreterVisitor visitor;
+    InterpreterVisitor visitor(environment);
     return std::visit(visitor,expr);
 }

@@ -25,6 +25,12 @@ struct PrintVisitor {
         ss << "(group " << std::visit(*this, *expr.expression) << ")";
         return ss.str();
     }
+    std::string operator()(const VariableExpression& expr) {
+        return expr.name.lexeme;
+    }
+    std::string operator()(const AssignmentExpression& expr) {
+        return expr.name.lexeme;
+    }
 };
 
 #endif

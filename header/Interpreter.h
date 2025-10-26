@@ -5,6 +5,7 @@
 #include <vector>
 #include <Expression.h>
 #include <Statement.h>
+#include <Environment.h>
 
 class Interpreter{
 
@@ -14,6 +15,7 @@ public:
 
 private:
     Literal evaluate(const Expression& expr);
+    Environment environment;
 };
 
 

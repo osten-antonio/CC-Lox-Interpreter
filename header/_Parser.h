@@ -29,15 +29,22 @@ private:
     std::shared_ptr<Expression> unary();
     std::shared_ptr<Expression> primary();
     
+    std::shared_ptr<Expression> assignment();
+
     std::shared_ptr<Statement> statement(bool executing=true);
     std::shared_ptr<Statement> printStatement();
     std::shared_ptr<Statement> expressionStatement(bool executing=true);
 
+    std::shared_ptr<Statement> declaration();
+    std::shared_ptr<Statement> varDeclaration();
+
+    
     Token advance();
     Token peek();
     Token previous();
     bool isAtEnd();
-
+    
+    void sync();
 };
 
 

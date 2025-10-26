@@ -5,14 +5,14 @@
 
 #include <memory>
 #include <exception>
-
+#include <Variable.h>
 #include <_error.h>
 
 Parser::Parser(std::vector<Token> _tokens):tokens(_tokens)
 {}
 
 std::shared_ptr<Expression> Parser::expression() {
-    return equality();
+    return assignment();
 }
 
 std::shared_ptr<Expression> Parser::equality() {
@@ -107,6 +107,9 @@ std::shared_ptr<Expression> Parser::primary(){
     if(match({NIL})){
         return std::make_shared<Expression>(LiteralExpression{previous().lexeme, std::monostate{}});
     }
+    if(match({IDENTIFIER})){
+        return std::make_shared<Expression>(VariableExpression{previous()});
+    }
     if (match({LEFT_PAREN})) {
         std::shared_ptr<Expression> innerExpr = expression();
         if(match({RIGHT_PAREN})){
@@ -121,7 +124,7 @@ std::vector<std::shared_ptr<Statement>> Parser::parse(bool executing) {
     std::vector<std::shared_ptr<Statement>> statements;
 
     while(!isAtEnd()){
-        statements.push_back(statement(executing));
+        statements.push_back(declaration());
     }
 
     return statements;
@@ -132,6 +135,40 @@ std::shared_ptr<Statement> Parser::statement(bool executing){
 
     return expressionStatement(executing);
 }   
+
+std::shared_ptr<Statement> Parser::declaration() {
+    try {
+        if (match({VAR})) return varDeclaration();
+
+        return statement();
+    } catch (ParseError error) {
+        Token t = peek();
+        sync();
+        throw ParseError(t._line,t.lexeme,"");
+    }
+}
+
+std::shared_ptr<Statement> Parser::varDeclaration(){
+    if(!isAtEnd() && peek().tokenType == IDENTIFIER){
+        Token name = advance();
+        std::shared_ptr<Expression> initializer = nullptr;
+        if(match({EQUAL})){
+            initializer = expression();
+        }
+        if(!isAtEnd() && peek().tokenType == SEMICOLON) advance();
+        else{
+            throw RuntimeError(peek(),"Expect ';' after variable declaration.");
+        }
+        varDecl decl{name.lexeme, initializer};
+        VarStatement stmt{name.lexeme, initializer};
+        return std::make_shared<Statement>(stmt);
+    }
+    else{
+        Token token = peek();
+        throw ParseError(token._line, token.lexeme, "Expect variable name.");
+    }
+}  
+
 
 std::shared_ptr<Statement> Parser::expressionStatement(bool executing){
     std::shared_ptr<Expression> expr = expression();
@@ -150,4 +187,43 @@ std::shared_ptr<Statement> Parser::printStatement(){
         throw ParseError(token._line,token.lexeme, "Expect ';' after value.");
     }
     return std::make_shared<Statement>(PrintStatement{expr});
+}
+
+std::shared_ptr<Expression> Parser::assignment(){
+    std::shared_ptr<Expression> expr = equality();
+    if(match({EQUAL})){
+        Token equals = previous();
+        std::shared_ptr<Expression> value = assignment();
+        
+        if(std::holds_alternative<VariableExpression>(*expr)){
+            Token name = std::get<VariableExpression>(*expr).name;
+            return std::make_shared<Expression>(AssignmentExpression{name,value});
+        }
+        throw RuntimeError(equals,"Invalid assignmnet target.");
+    }
+    return expr;
+}
+
+
+void Parser::sync(){
+    advance();
+
+    while (!isAtEnd()) {
+      if (previous().tokenType == SEMICOLON) return;
+
+      switch (peek().tokenType) {
+        case CLASS:
+        case FUN:
+        case VAR:
+        case FOR:
+        case IF:
+        case WHILE:
+        case PRINT:
+        case RETURN:
+          return;
+      }
+
+      advance();
+    }
+    
 }
