@@ -124,7 +124,7 @@ std::vector<std::shared_ptr<Statement>> Parser::parse(bool executing) {
     std::vector<std::shared_ptr<Statement>> statements;
 
     while(!isAtEnd()){
-        statements.push_back(declaration());
+        statements.push_back(declaration(executing));
     }
 
     return statements;
@@ -136,26 +136,28 @@ std::shared_ptr<Statement> Parser::statement(bool executing){
     return expressionStatement(executing);
 }   
 
-std::shared_ptr<Statement> Parser::declaration() {
+std::shared_ptr<Statement> Parser::declaration(bool executing) {
     try {
-        if (match({VAR})) return varDeclaration();
+        if (match({VAR})) return varDeclaration(executing);
 
-        return statement();
+        return statement(executing);
     } catch (ParseError error) {
         Token t = peek();
         sync();
-        throw ParseError(t._line,t.lexeme,"");
+        throw error ;
     }
 }
 
-std::shared_ptr<Statement> Parser::varDeclaration(){
+std::shared_ptr<Statement> Parser::varDeclaration(bool executing){
     if(!isAtEnd() && peek().tokenType == IDENTIFIER){
         Token name = advance();
         std::shared_ptr<Expression> initializer = nullptr;
         if(match({EQUAL})){
             initializer = expression();
         }
-        if(!isAtEnd() && peek().tokenType == SEMICOLON) advance();
+        if(!isAtEnd() && peek().tokenType == SEMICOLON && executing){
+            advance();
+        }
         else{
             throw RuntimeError(peek(),"Expect ';' after variable declaration.");
         }

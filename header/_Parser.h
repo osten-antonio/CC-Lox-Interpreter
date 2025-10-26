@@ -35,8 +35,8 @@ private:
     std::shared_ptr<Statement> printStatement();
     std::shared_ptr<Statement> expressionStatement(bool executing=true);
 
-    std::shared_ptr<Statement> declaration();
-    std::shared_ptr<Statement> varDeclaration();
+    std::shared_ptr<Statement> declaration(bool executing=true);
+    std::shared_ptr<Statement> varDeclaration(bool executing=true);
 
     
     Token advance();
