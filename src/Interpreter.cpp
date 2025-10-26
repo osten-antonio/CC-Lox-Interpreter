@@ -5,8 +5,8 @@
 #include <_error.h>
 
 struct InterpreterVisitor{
-    Environment& environment;
-    InterpreterVisitor(Environment& env) : environment(env) {}
+    std::shared_ptr<Environment> environment;
+    InterpreterVisitor(Environment env) : environment(std::make_shared<Environment>(env)) {}
     bool isEqual(Literal a, Literal b){
         if(std::holds_alternative<std::monostate>(a) && std::holds_alternative<std::monostate>(b)) return true;
         if(std::holds_alternative<std::monostate>(a)) return false;
@@ -33,7 +33,6 @@ struct InterpreterVisitor{
         auto prev = this->environment;
         this->environment = env;
         try{
-            this->environment;
             for(std::shared_ptr<Statement> stmt:statements){
                 std::visit(*this, stmt->statement);
             }
@@ -127,13 +126,13 @@ struct InterpreterVisitor{
         return std::visit(*this,*expr.expression);
     }
     Literal operator()(const VariableExpression& expr){
-        Literal val = environment.get(expr.name);
+        Literal val = environment->get(expr.name);
         return val;
         
     }
     Literal operator()(const AssignmentExpression& expr){
         Literal val = std::visit(*this, *expr.value);
-        environment.assign(expr.name,val);
+        environment->assign(expr.name,val);
         return val;
     }
 
@@ -163,7 +162,7 @@ struct InterpreterVisitor{
     void operator()(const VarStatement& stmt){
         Literal val;
         if(stmt.initializer) val=std::visit(*this,*stmt.initializer);
-        environment.define(stmt.identifier,val);
+        environment->define(stmt.identifier,val);
     }
     void operator()(const BlockStatement& stmt){
         executeBlock(stmt.Statements, std::make_shared<Environment>(this->environment));
