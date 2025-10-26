@@ -137,11 +137,6 @@ struct InterpreterVisitor{
                 oss << std::setprecision(15);
                 oss << arg;
                 std::string s = oss.str();
-
-                // Ensure at least one decimal point
-                if (s.find('.') == std::string::npos) {
-                    s += ".0";
-                }
                 return s+'\n';
             }
         },val);
