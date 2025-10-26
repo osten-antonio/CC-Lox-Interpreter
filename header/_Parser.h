@@ -15,7 +15,7 @@ std::vector<Token> tokens;
 public:
     Parser(std::vector<Token> _tokens);
     void print();
-    std::vector<std::shared_ptr<Statement>> parse();
+    std::vector<std::shared_ptr<Statement>> parse(bool evaluate=false);
 private:
     int current = 0;
     bool match(std::vector<TokenType> types);
@@ -29,9 +29,9 @@ private:
     std::shared_ptr<Expression> unary();
     std::shared_ptr<Expression> primary();
     
-    std::shared_ptr<Statement> statement();
+    std::shared_ptr<Statement> statement(bool evaluate=false);
     std::shared_ptr<Statement> printStatement();
-    std::shared_ptr<Statement> expressionStatement();
+    std::shared_ptr<Statement> expressionStatement(bool evaluate=false);
 
     Token advance();
     Token peek();

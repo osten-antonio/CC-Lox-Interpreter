@@ -116,25 +116,25 @@ std::shared_ptr<Expression> Parser::primary(){
     Token token = peek();
     throw ParseError(token._line,token.lexeme, "Expected expression.");
 }
-std::vector<std::shared_ptr<Statement>> Parser::parse() {
+std::vector<std::shared_ptr<Statement>> Parser::parse(bool evaluate) {
     std::vector<std::shared_ptr<Statement>> statements;
 
     while(!isAtEnd()){
-        statements.push_back(statement());
+        statements.push_back(statement(evaluate));
     }
 
     return statements;
 }
 
-std::shared_ptr<Statement> Parser::statement(){
+std::shared_ptr<Statement> Parser::statement(bool evaluate){
     if(match({PRINT})) return printStatement();
 
-    return expressionStatement();
+    return expressionStatement(evaluate);
 }   
 
-std::shared_ptr<Statement> Parser::expressionStatement(){
+std::shared_ptr<Statement> Parser::expressionStatement(bool evaluate){
     std::shared_ptr<Expression> expr = expression();
-    if(!match({SEMICOLON})){
+    if(!evaluate && !match({SEMICOLON})){
         Token token = peek();
         throw ParseError(token._line,token.lexeme, "Expect ';' after value.");
     }

@@ -103,30 +103,24 @@ int main(int argc, char *argv[]) {
 
         Parser* parser = new Parser(tokens);
         try{
-            std::vector<std::shared_ptr<Statement>> statements= parser->parse();
-            if (!statements.empty()) {
-                Interpreter interpreter;
-                for (std::shared_ptr<Statement>& stmt : statements) {
-                    if (stmt != nullptr) {
-                        if(std::holds_alternative<ExpressionStatement>(stmt->statement)){
-                            // im going to kms
-                            std::variant<std::string,std::monostate> interpreted = interpreter.interpret(
-                                *std::get<ExpressionStatement>(stmt->statement).expression);
-                            if(std::holds_alternative<std::monostate>(interpreted)) return 70;
-                            std::cout<<std::get<std::string>(interpreted);
-                        }
-                    } else {
-                        return 70;
-                    }
+            std::vector<std::shared_ptr<Statement>> statements= parser->parse(true);
+            if (statements.empty()) return 65;
+            Interpreter interpreter;
+            for (std::shared_ptr<Statement>& stmt : statements) {
+                if (!stmt) return 70;
+                if(std::holds_alternative<ExpressionStatement>(stmt->statement)){
+                    // im going to kms
+                    std::variant<std::string,std::monostate> interpreted = interpreter.interpret(
+                        *std::get<ExpressionStatement>(stmt->statement).expression);
+                    if(std::holds_alternative<std::monostate>(interpreted)) return 70;
+                    std::cout<<std::get<std::string>(interpreted);
                 }
-            } else {
-                return 70;
             }
+            
         } catch(ParseError e){
             std::cerr << "[line " <<e.line<<"] " <<e.message <<'\n';
             return 70;
         }
-
 
 
     }
