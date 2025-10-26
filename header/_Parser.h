@@ -29,9 +29,9 @@ private:
     std::shared_ptr<Expression> unary();
     std::shared_ptr<Expression> primary();
     
-    std::shared_ptr<Statement> statement(bool evaluate=false);
+    std::shared_ptr<Statement> statement(bool executing=true);
     std::shared_ptr<Statement> printStatement();
-    std::shared_ptr<Statement> expressionStatement(bool evaluate=false);
+    std::shared_ptr<Statement> expressionStatement(bool executing=true);
 
     Token advance();
     Token peek();

@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
 
         Parser* parser = new Parser(tokens);
         try{        
-            std::vector<std::shared_ptr<Statement>> statements= parser->parse();
+            std::vector<std::shared_ptr<Statement>> statements= parser->parse(false);
 
             if (!statements.empty()) {
                 for (std::shared_ptr<Statement>& stmt : statements) {
@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
 
         Parser* parser = new Parser(tokens);
         try{
-            std::vector<std::shared_ptr<Statement>> statements= parser->parse(true);
+            std::vector<std::shared_ptr<Statement>> statements= parser->parse(false);
             if (statements.empty()) return 65;
             Interpreter interpreter;
             for (std::shared_ptr<Statement>& stmt : statements) {
