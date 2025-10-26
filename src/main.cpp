@@ -120,11 +120,11 @@ int main(int argc, char *argv[]) {
                     }
                 }
             } else {
-                hadError=true;
+                return 70;
             }
         } catch(ParseError e){
             std::cerr << "[line " <<e.line<<"] " <<e.message <<'\n';
-            hadError=true;
+            return 70;
         }
 
 
