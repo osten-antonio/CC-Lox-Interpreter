@@ -1,8 +1,12 @@
 {
-    var world = "before";
+    var quz = "outer quz";
+    var hello = "outer hello";
     {
-        var world = "after";
-        print world;
+        quz = "modified quz";
+        var hello = "inner hello";
+        print quz;
+        print hello;
     }
-    print world;
+    print quz;
+    print hello;
 }

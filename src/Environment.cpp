@@ -18,6 +18,9 @@ void Environment::assign(Token name, Literal value){
         values[name.lexeme]=value;
         return;
     }
-    if(enclosing) return enclosing->assign(name,value);
+    if(enclosing){
+        enclosing->assign(name,value);
+        return;
+    }
     throw RuntimeError(name,"Undefined variable "+name.lexeme+".");
 }
