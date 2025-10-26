@@ -6,19 +6,7 @@
 #include <memory>
 #include <exception>
 
-
-struct ParseError : public std::exception {
-    int line;
-    std::string lexeme;
-    std::string message;
-
-    ParseError(int l, const std::string& lex, const std::string& msg)
-        : line(l), lexeme(lex), message(msg) {}
-
-    const char* what() const noexcept override {
-        return message.c_str();
-    }
-};
+#include <_error.h>
 
 Parser::Parser(std::vector<Token> _tokens):tokens(_tokens)
 {}
@@ -136,13 +124,6 @@ std::vector<std::shared_ptr<Statement>> Parser::parse() {
     }
 
     return statements;
-
-    // try {
-    //     return expression();
-    // } catch (const ParseError& e) {
-    //     std::cerr << "[line " << e.line << "] Error at '" << e.lexeme << "': " << e.message << '\n';
-    //     return nullptr;
-    // }
 }
 
 std::shared_ptr<Statement> Parser::statement(){

@@ -2,17 +2,7 @@
 #include <iostream>
 #include <exception>
 #include <Statement.h>
-
-struct RuntimeError: public std::exception{
-    std::string message;
-    Token token;
-    RuntimeError(Token _token, const std::string& msg)
-        : token(_token), message(msg) {}
-
-    const char* what() const noexcept override {
-        return message.c_str();
-    }
-};
+#include <_error.h>
 
 struct InterpreterVisitor{
     bool isEqual(Literal a, Literal b){

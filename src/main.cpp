@@ -1,12 +1,12 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
-#include <sstream>
-#include <string>
+#include <_error.h>
 #include <Scanner.h>
 #include <_Parser.h>
 #include <printVisitor.h>
 #include <Interpreter.h>
+
 
 std::string read_file_contents(const std::string& filename);
 bool hadError = false;
@@ -73,22 +73,27 @@ int main(int argc, char *argv[]) {
         tokens = scanner->scanTokens();
 
         Parser* parser = new Parser(tokens);
-        std::vector<std::shared_ptr<Statement>> statements= parser->parse();
+        try{        
+            std::vector<std::shared_ptr<Statement>> statements= parser->parse();
 
-        if (!statements.empty()) {
-            for (std::shared_ptr<Statement>& stmt : statements) {
-                if (stmt != nullptr) {
-                    if(std::holds_alternative<ExpressionStatement>(stmt->statement)){
-                        std::cout << std::visit(
-                            PrintVisitor{}, 
-                            *std::get<ExpressionStatement>(stmt->statement).expression) << '\n';
+            if (!statements.empty()) {
+                for (std::shared_ptr<Statement>& stmt : statements) {
+                    if (stmt != nullptr) {
+                        if(std::holds_alternative<ExpressionStatement>(stmt->statement)){
+                            std::cout << std::visit(
+                                PrintVisitor{}, 
+                                *std::get<ExpressionStatement>(stmt->statement).expression) << '\n';
+                        }
+                    } else {
+                        hadError = true;
                     }
-                } else {
-                    return 65; 
                 }
+            } else {
+                hadError = true;
             }
-        } else {
-            return 65; 
+        }catch(ParseError e){
+            std::cerr << "[line " <<e.line<<"] " <<e.message <<'\n';
+            hadError=true;
         }
     } 
     else if(command=="evaluate"){
@@ -97,26 +102,33 @@ int main(int argc, char *argv[]) {
         tokens = scanner->scanTokens();
 
         Parser* parser = new Parser(tokens);
-        std::vector<std::shared_ptr<Statement>> statements= parser->parse();
-
-        if (!statements.empty()) {
-            Interpreter interpreter;
-            for (std::shared_ptr<Statement>& stmt : statements) {
-                if (stmt != nullptr) {
-                    if(std::holds_alternative<ExpressionStatement>(stmt->statement)){
-                        // im going to kms
-                        std::variant<std::string,std::monostate> interpreted = interpreter.interpret(
-                            *std::get<ExpressionStatement>(stmt->statement).expression);
-                        if(std::holds_alternative<std::monostate>(interpreted)) return 70;
-                        std::cout<<std::get<std::string>(interpreted);
+        try{
+            std::vector<std::shared_ptr<Statement>> statements= parser->parse();
+            if (!statements.empty()) {
+                Interpreter interpreter;
+                for (std::shared_ptr<Statement>& stmt : statements) {
+                    if (stmt != nullptr) {
+                        if(std::holds_alternative<ExpressionStatement>(stmt->statement)){
+                            // im going to kms
+                            std::variant<std::string,std::monostate> interpreted = interpreter.interpret(
+                                *std::get<ExpressionStatement>(stmt->statement).expression);
+                            if(std::holds_alternative<std::monostate>(interpreted)) return 70;
+                            std::cout<<std::get<std::string>(interpreted);
+                        }
+                    } else {
+                        hadError=true;
                     }
-                } else {
-                    return 65; 
                 }
+            } else {
+                hadError=true;
             }
-        } else {
-            return 65; 
+        } catch(ParseError e){
+            std::cerr << "[line " <<e.line<<"] " <<e.message <<'\n';
+            hadError=true;
         }
+
+
+
     }
     else if(command=="run"){
         std::string file_contents = read_file_contents(argv[2]);
@@ -124,14 +136,20 @@ int main(int argc, char *argv[]) {
         tokens = scanner->scanTokens();
 
         Parser* parser = new Parser(tokens);
-        std::vector<std::shared_ptr<Statement>> statements= parser->parse();
-
-        if (!statements.empty()) {
-            Interpreter interpreter;
-            interpreter.interpretStatements(statements);
-        } else {
-            return 65; 
+        try{
+            std::vector<std::shared_ptr<Statement>> statements= parser->parse();
+            if (!statements.empty()) {
+                Interpreter interpreter;
+                interpreter.interpretStatements(statements);
+            } else {
+                hadError=true; 
+            }
+        }catch(ParseError e){
+            std::cerr << "[line " <<e.line<<"] " <<e.message <<'\n';
+            hadError=true;
         }
+        
+
     }
     else {
         std::cerr << "Unknown command: " << command << std::endl;
