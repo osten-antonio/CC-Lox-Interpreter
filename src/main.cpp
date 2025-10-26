@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
                             std::cout<<std::get<std::string>(interpreted);
                         }
                     } else {
-                        hadError=true;
+                        return 70;
                     }
                 }
             } else {
