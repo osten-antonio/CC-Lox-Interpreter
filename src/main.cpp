@@ -73,12 +73,22 @@ int main(int argc, char *argv[]) {
         tokens = scanner->scanTokens();
 
         Parser* parser = new Parser(tokens);
-        std::shared_ptr<Expression> parsedExpression= parser->parse();
+        std::vector<std::shared_ptr<Statement>> statements= parser->parse();
 
-        if(parsedExpression!=nullptr){
-            std::cout << std::visit(PrintVisitor{}, *parsedExpression) << '\n';
-        }else{
-            return 65;
+        if (!statements.empty()) {
+            for (std::shared_ptr<Statement>& stmt : statements) {
+                if (stmt != nullptr) {
+                    if(std::holds_alternative<ExpressionStatement>(stmt->statement)){
+                        std::cout << std::visit(
+                            PrintVisitor{}, 
+                            *std::get<ExpressionStatement>(stmt->statement).expression) << '\n';
+                    }
+                } else {
+                    return 65; 
+                }
+            }
+        } else {
+            return 65; 
         }
     } 
     else if(command=="evaluate"){
@@ -87,14 +97,40 @@ int main(int argc, char *argv[]) {
         tokens = scanner->scanTokens();
 
         Parser* parser = new Parser(tokens);
-        std::shared_ptr<Expression> parsedExpression= parser->parse();
+        std::vector<std::shared_ptr<Statement>> statements= parser->parse();
 
-        if(parsedExpression!=nullptr){
+        if (!statements.empty()) {
             Interpreter interpreter;
-            int res = interpreter.interpret(*parsedExpression);
-            if(res==-1) return 70;
-        }else{
-            return 65;
+            for (std::shared_ptr<Statement>& stmt : statements) {
+                if (stmt != nullptr) {
+                    if(std::holds_alternative<ExpressionStatement>(stmt->statement)){
+                        // im going to kms
+                        std::variant<std::string,std::monostate> interpreted = interpreter.interpret(
+                            *std::get<ExpressionStatement>(stmt->statement).expression);
+                        if(std::holds_alternative<std::monostate>(interpreted)) return 70;
+                        std::cout<<std::get<std::string>(interpreted);
+                    }
+                } else {
+                    return 65; 
+                }
+            }
+        } else {
+            return 65; 
+        }
+    }
+    else if(command=="run"){
+        std::string file_contents = read_file_contents(argv[2]);
+        Scanner* scanner= new Scanner(file_contents);
+        tokens = scanner->scanTokens();
+
+        Parser* parser = new Parser(tokens);
+        std::vector<std::shared_ptr<Statement>> statements= parser->parse();
+
+        if (!statements.empty()) {
+            Interpreter interpreter;
+            interpreter.interpretStatements(statements);
+        } else {
+            return 65; 
         }
     }
     else {

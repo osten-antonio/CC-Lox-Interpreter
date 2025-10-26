@@ -6,6 +6,7 @@
 #include <memory>
 #include <exception>
 
+
 struct ParseError : public std::exception {
     int line;
     std::string lexeme;
@@ -127,11 +128,44 @@ std::shared_ptr<Expression> Parser::primary(){
     Token token = peek();
     throw ParseError(token._line,token.lexeme, "Expected expression.");
 }
-std::shared_ptr<Expression> Parser::parse() {
-    try {
-        return expression();
-    } catch (const ParseError& e) {
-        std::cerr << "[line " << e.line << "] Error at '" << e.lexeme << "': " << e.message << '\n';
-        return nullptr;
+std::vector<std::shared_ptr<Statement>> Parser::parse() {
+    std::vector<std::shared_ptr<Statement>> statements;
+
+    while(!isAtEnd()){
+        statements.push_back(statement());
     }
+
+    return statements;
+
+    // try {
+    //     return expression();
+    // } catch (const ParseError& e) {
+    //     std::cerr << "[line " << e.line << "] Error at '" << e.lexeme << "': " << e.message << '\n';
+    //     return nullptr;
+    // }
+}
+
+std::shared_ptr<Statement> Parser::statement(){
+    if(match({PRINT})) return printStatement();
+
+    return expressionStatement();
+}   
+
+std::shared_ptr<Statement> Parser::expressionStatement(){
+    std::shared_ptr<Expression> expr = expression();
+    if(!match({SEMICOLON})){
+        Token token = peek();
+        throw ParseError(token._line,token.lexeme, "Expect ';' after value.");
+    }
+    return std::make_shared<Statement>(ExpressionStatement{expr});
+}
+
+
+std::shared_ptr<Statement> Parser::printStatement(){
+    std::shared_ptr<Expression> expr = expression();
+    if(!match({SEMICOLON})){
+        Token token = peek();
+        throw ParseError(token._line,token.lexeme, "Expect ';' after value.");
+    }
+    return std::make_shared<Statement>(PrintStatement{expr});
 }

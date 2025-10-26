@@ -1,6 +1,7 @@
 #include <Interpreter.h>
 #include <iostream>
 #include <exception>
+#include <Statement.h>
 
 struct RuntimeError: public std::exception{
     std::string message;
@@ -118,27 +119,80 @@ struct InterpreterVisitor{
     Literal operator()(const GroupingExpression& expr){
         return std::visit(*this,*expr.expression);
     }
+
+
+    // Statement visitors
+    void operator()(const PrintStatement& stmt){
+        Literal val = std::visit(*this,*stmt.expression);
+        std::cout << std::visit([&](auto&& arg) {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, std::monostate>) {
+                return std::string("nil\n");
+            } else if constexpr (std::is_same_v<T, bool>) {
+                return std::string(arg ? "true\n" : "false\n");
+            } else if constexpr (std::is_same_v<T, std::string>){
+                return arg + '\n';
+            } else if constexpr (std::is_same_v<T, double>){
+                std::ostringstream oss;
+                oss << std::setprecision(15);
+                oss << arg;
+                std::string s = oss.str();
+
+                // Ensure at least one decimal point
+                if (s.find('.') == std::string::npos) {
+                    s += ".0";
+                }
+                return s+'\n';
+            }
+        },val);
+    }
+    void operator()(const ExpressionStatement& stmt){
+        std::visit(*this,*stmt.expression);
+    }
+
 };
 
 
+void Interpreter::interpretStatements(std::vector<std::shared_ptr<Statement>> stmts){
+    InterpreterVisitor visitor;
+    for(std::shared_ptr<Statement> stmt:stmts){
+        try{
+            std::visit(visitor, stmt->statement);
+        } catch (const RuntimeError& e) {
+            std::cerr << "[line " << e.token._line << "] " << e.message << "\n";
+        }
+    }
+}
 
-int Interpreter::interpret(const Expression& expr){
+
+std::variant<std::string,std::monostate> Interpreter::interpret(const Expression& expr){
     try{
         Literal value = evaluate(expr);
-        std::visit([&](auto&& arg) {
+        return std::visit([&](auto&& arg) {
             using T = std::decay_t<decltype(arg)>;
             if constexpr (std::is_same_v<T, std::monostate>) {
-                std::cout << "nil" << '\n';
+                return std::string("nil\n");
             } else if constexpr (std::is_same_v<T, bool>) {
-                std::cout << (arg ? "true" : "false") << '\n';
-            } else {
-                std::cout << arg << '\n';
+                return std::string(arg ? "true\n" : "false\n");
+            } else if constexpr (std::is_same_v<T, std::string>){
+                return arg + '\n';
+            } else if constexpr (std::is_same_v<T, double>){
+                std::ostringstream oss;
+                oss << std::setprecision(15);
+                oss << arg;
+                std::string s = oss.str();
+
+                // Ensure at least one decimal point
+                if (s.find('.') == std::string::npos) {
+                    s += ".0";
+                }
+                return s+'\n';
             }
         }, value);
-        return 0;
+        
     } catch (RuntimeError e){
         std::cerr << "[line " << e.token._line <<"] " << e.message << '\n';
-        return -1;
+        return std::monostate{};
     }
 
 }

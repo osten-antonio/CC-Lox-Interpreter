@@ -6,7 +6,7 @@
 #include <vector>
 #include <common.h>
 #include <Expression.h>
-
+#include <Statement.h>
 
 class Parser
 {
@@ -15,7 +15,7 @@ std::vector<Token> tokens;
 public:
     Parser(std::vector<Token> _tokens);
     void print();
-    std::shared_ptr<Expression> parse();
+    std::vector<std::shared_ptr<Statement>> parse();
 private:
     int current = 0;
     bool match(std::vector<TokenType> types);
@@ -28,7 +28,10 @@ private:
     std::shared_ptr<Expression> factor();
     std::shared_ptr<Expression> unary();
     std::shared_ptr<Expression> primary();
-
+    
+    std::shared_ptr<Statement> statement();
+    std::shared_ptr<Statement> printStatement();
+    std::shared_ptr<Statement> expressionStatement();
 
     Token advance();
     Token peek();

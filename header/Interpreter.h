@@ -2,12 +2,15 @@
 #define CODECRAFTERS_INTERPRETER_INTERPRETER_H
 
 #include <common.h>
+#include <vector>
 #include <Expression.h>
+#include <Statement.h>
 
 class Interpreter{
 
 public:
-    int interpret(const Expression& expr);
+    void interpretStatements(std::vector<std::shared_ptr<Statement>> stmts);
+    std::variant<std::string,std::monostate> interpret(const Expression& expr);
 
 private:
     Literal evaluate(const Expression& expr);
