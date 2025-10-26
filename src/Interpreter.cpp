@@ -29,8 +29,8 @@ struct InterpreterVisitor{
         return true;
     }
 
-    void executeBlock(std::vector<std::shared_ptr<Statement>> statements, Environment& env){
-        Environment& prev = this->environment;
+    void executeBlock(std::vector<std::shared_ptr<Statement>> statements, std::shared_ptr<Environment> env){
+        auto prev = this->environment;
         this->environment = env;
         try{
             this->environment;
@@ -166,9 +166,7 @@ struct InterpreterVisitor{
         environment.define(stmt.identifier,val);
     }
     void operator()(const BlockStatement& stmt){
-        Environment newEnv(environment);
-        executeBlock(stmt.Statements, newEnv);
-        return;
+        executeBlock(stmt.Statements, std::make_shared<Environment>(this->environment));
     }
 
 };
