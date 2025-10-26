@@ -134,7 +134,7 @@ std::shared_ptr<Statement> Parser::statement(bool evaluate){
 
 std::shared_ptr<Statement> Parser::expressionStatement(bool executing){
     std::shared_ptr<Expression> expr = expression();
-    if(!executing && !match({SEMICOLON})){
+    if(executing && !match({SEMICOLON})){
         Token token = peek();
         throw ParseError(token._line,token.lexeme, "Expect ';' after value.");
     }

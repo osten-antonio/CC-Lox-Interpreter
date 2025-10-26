@@ -76,21 +76,15 @@ int main(int argc, char *argv[]) {
         try{        
             std::vector<std::shared_ptr<Statement>> statements= parser->parse(false);
 
-            if (!statements.empty()) {
+            if (statements.empty()) hadError=true;
                 for (std::shared_ptr<Statement>& stmt : statements) {
-                    if (stmt != nullptr) {
-                        if(std::holds_alternative<ExpressionStatement>(stmt->statement)){
-                            std::cout << std::visit(
-                                PrintVisitor{}, 
-                                *std::get<ExpressionStatement>(stmt->statement).expression) << '\n';
-                        }
-                    } else {
-                        hadError = true;
+                    if (!stmt) hadError = true;
+                    if(std::holds_alternative<ExpressionStatement>(stmt->statement)){
+                        std::cout << std::visit(
+                            PrintVisitor{}, 
+                            *std::get<ExpressionStatement>(stmt->statement).expression) << '\n';
                     }
-                }
-            } else {
-                hadError = true;
-            }
+                } 
         }catch(ParseError e){
             std::cerr << "[line " <<e.line<<"] " <<e.message <<'\n';
             hadError=true;
