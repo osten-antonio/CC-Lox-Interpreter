@@ -5,6 +5,7 @@ Literal Environment::get(Token name){
     if(values.find(name.lexeme) != values.end()){
         return values[name.lexeme];
     }
+    if(enclosing) return enclosing->get(name);
     throw RuntimeError(name,"Undefined variable "+name.lexeme+".");
     
 }
@@ -17,5 +18,6 @@ void Environment::assign(Token name, Literal value){
         values[name.lexeme]=value;
         return;
     }
+    if(enclosing) return enclosing->assign(name,value);
     throw RuntimeError(name,"Undefined variable "+name.lexeme+".");
 }

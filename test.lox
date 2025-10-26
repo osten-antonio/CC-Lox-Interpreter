@@ -1,1 +1,8 @@
-"hello" != "bar"
+{
+    var world = "before";
+    print world;
+}
+{
+    var world = "after";
+    print world;
+}

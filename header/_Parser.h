@@ -19,7 +19,6 @@ public:
 private:
     int current = 0;
     bool match(std::vector<TokenType> types);
-    bool check(TokenType type);
 
     std::shared_ptr<Expression> expression();
     std::shared_ptr<Expression> equality();
@@ -37,7 +36,8 @@ private:
 
     std::shared_ptr<Statement> declaration(bool executing=true);
     std::shared_ptr<Statement> varDeclaration(bool executing=true);
-
+    
+    std::shared_ptr<Statement> block(bool executing);
     
     Token advance();
     Token peek();

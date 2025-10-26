@@ -29,6 +29,21 @@ struct InterpreterVisitor{
         return true;
     }
 
+    void executeBlock(std::vector<std::shared_ptr<Statement>> statements, Environment& env){
+        Environment& prev = this->environment;
+        this->environment = env;
+        try{
+            this->environment;
+            for(std::shared_ptr<Statement> stmt:statements){
+                std::visit(*this, stmt->statement);
+            }
+        }catch (...) {
+            this->environment = prev;          
+            throw;                            
+        }
+        this->environment = prev; 
+    }
+
     void checkNumberOperands(Literal operand, Token op){
         if(std::holds_alternative<double>(operand)) return;
         throw RuntimeError(op,"Operand must be a number.");
@@ -149,6 +164,11 @@ struct InterpreterVisitor{
         Literal val;
         if(stmt.initializer) val=std::visit(*this,*stmt.initializer);
         environment.define(stmt.identifier,val);
+    }
+    void operator()(const BlockStatement& stmt){
+        Environment newEnv(environment);
+        executeBlock(stmt.Statements, newEnv);
+        return;
     }
 
 };

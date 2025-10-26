@@ -132,9 +132,23 @@ std::vector<std::shared_ptr<Statement>> Parser::parse(bool executing) {
 
 std::shared_ptr<Statement> Parser::statement(bool executing){
     if(match({PRINT})) return printStatement();
-
+    if(match({LEFT_BRACE})) return block(executing);
     return expressionStatement(executing);
 }   
+
+std::shared_ptr<Statement> Parser::block(bool executing){
+    std::vector<std::shared_ptr<Statement>> statements;
+    while(!isAtEnd() && peek().tokenType != RIGHT_BRACE){
+        statements.push_back(declaration(executing));
+    }
+    
+    if (isAtEnd()) {
+        throw ParseError(peek()._line, peek().lexeme, "Expect '}' after block.");
+    }
+    advance();
+    return std::make_shared<Statement>(BlockStatement{statements});
+}
+    
 
 std::shared_ptr<Statement> Parser::declaration(bool executing) {
     try {
