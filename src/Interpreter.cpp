@@ -145,6 +145,7 @@ void Interpreter::interpretStatements(std::vector<std::shared_ptr<Statement>> st
             std::visit(visitor, stmt->statement);
         } catch (const RuntimeError& e) {
             std::cerr << "[line " << e.token._line << "] " << e.message << "\n";
+            throw e;
         }
     }
 }
