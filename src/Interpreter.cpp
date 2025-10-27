@@ -25,7 +25,6 @@ struct InterpreterVisitor{
         if(std::holds_alternative<std::monostate>(obj)) return false;
         if(std::holds_alternative<bool>(obj)) return std::get<bool>(obj);
         if(std::holds_alternative<double>(obj) && std::get<double>(obj) == 0) return false;
-        if(std::holds_alternative<std::string>(obj) && std::get<std::string>(obj).length() == 0) return false; 
         return true;
     }
 

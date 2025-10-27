@@ -31,8 +31,13 @@ struct IfStatement{
     std::shared_ptr<Statement> elseBranch;
 };
 
+struct WhileStatement{
+    std::shared_ptr<Expression> condition;
+    std::shared_ptr<Statement> body;
+};
+
 struct Statement {
-    std::variant<ExpressionStatement, PrintStatement, VarStatement, BlockStatement, IfStatement> statement;
+    std::variant<ExpressionStatement, PrintStatement, VarStatement, BlockStatement, IfStatement, WhileStatement> statement;
 };
 
 
