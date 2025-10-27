@@ -36,8 +36,23 @@ struct WhileStatement{
     std::shared_ptr<Statement> body;
 };
 
+struct ForStatement{
+    std::shared_ptr<varDecl> var;
+    std::shared_ptr<Expression> exprStmt;
+    std::shared_ptr<Expression> incrStmt;
+    std::shared_ptr<Statement> body;
+};
+
 struct Statement {
-    std::variant<ExpressionStatement, PrintStatement, VarStatement, BlockStatement, IfStatement, WhileStatement> statement;
+    std::variant<
+        ExpressionStatement, 
+        PrintStatement, 
+        VarStatement, 
+        BlockStatement, 
+        IfStatement, 
+        WhileStatement
+    > statement;
+
 };
 
 

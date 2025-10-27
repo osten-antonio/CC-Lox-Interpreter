@@ -122,25 +122,86 @@ std::shared_ptr<Expression> Parser::primary(){
 }
 std::vector<std::shared_ptr<Statement>> Parser::parse(bool executing) {
     std::vector<std::shared_ptr<Statement>> statements;
-
+    this->executing = executing;
     while(!isAtEnd()){
-        statements.push_back(declaration(executing));
+        statements.push_back(declaration());
     }
 
     return statements;
 }
 
-std::shared_ptr<Statement> Parser::statement(bool executing){
-    if(match({IF})) return ifStatement(executing);
+std::shared_ptr<Statement> Parser::statement(){
+    if(match({FOR})) return forStatement();
+    if(match({WHILE})) return whileStatement();
+    if(match({IF})) return ifStatement();
     if(match({PRINT})) return printStatement();
-    if(match({LEFT_BRACE})) return block(executing);
-    return expressionStatement(executing);
+    if(match({LEFT_BRACE})) return block();
+    return expressionStatement();
 }   
 
-std::shared_ptr<Statement> Parser::block(bool executing){
+std::shared_ptr<Statement> Parser::forStatement(){
+    if(isAtEnd() || peek().tokenType != LEFT_PAREN) throw RuntimeError(peek(),"Expect '(' after 'for'.");
+    advance();
+
+    std::shared_ptr<Statement> initializer;
+    if(match({SEMICOLON})){
+        initializer=nullptr;
+    }else if(match({VAR})){
+        initializer = varDeclaration();
+    }else{
+        initializer = expressionStatement();
+    }
+    std::shared_ptr<Expression> condition;
+    if(!isAtEnd() && peek().tokenType !=SEMICOLON){
+        condition = expression();
+    }
+    if(isAtEnd() || peek().tokenType != SEMICOLON) throw RuntimeError(peek(),"Expect ';' after loop condition.");
+    advance();
+
+    std::shared_ptr<Expression> increment;
+    if(!isAtEnd() && peek().tokenType !=RIGHT_PAREN){
+        increment = expression();
+    }
+    if(isAtEnd() || peek().tokenType != RIGHT_PAREN) throw RuntimeError(peek(),"Expect ';' after for clauses.");
+    advance();
+    std::shared_ptr<Statement> body = statement();
+
+    if(increment){
+        body = std::make_shared<Statement>(BlockStatement{
+            std::vector<std::shared_ptr<Statement>>{
+                body, 
+                std::make_shared<Statement>(ExpressionStatement{increment})
+            }}
+        );
+    }
+
+    if(!condition){
+        condition = std::make_shared<Expression>(LiteralExpression{"true",true});
+    }
+    body = std::make_shared<Statement>(WhileStatement{condition,body});
+    if(initializer){
+        body = std::make_shared<Statement>(BlockStatement{
+            std::vector<std::shared_ptr<Statement>>{initializer,body}
+        });
+    }
+    return body;
+}
+
+std::shared_ptr<Statement> Parser::whileStatement(){
+    if(isAtEnd() && peek().tokenType != LEFT_PAREN) throw RuntimeError(peek(),"Expect '(' after 'while'.");
+    advance();
+    std::shared_ptr<Expression> expr = expression();
+    if(isAtEnd() && peek().tokenType != RIGHT_PAREN) throw RuntimeError(peek(),"Expect ')' after 'while'.");
+    advance();
+    std::shared_ptr<Statement> stmt = statement();
+    return std::make_shared<Statement>(WhileStatement{expr,stmt});
+
+}
+
+std::shared_ptr<Statement> Parser::block(){
     std::vector<std::shared_ptr<Statement>> statements;
     while(!isAtEnd() && peek().tokenType != RIGHT_BRACE){
-        statements.push_back(declaration(executing));
+        statements.push_back(declaration());
     }
     
     if (isAtEnd()) {
@@ -150,7 +211,7 @@ std::shared_ptr<Statement> Parser::block(bool executing){
     return std::make_shared<Statement>(BlockStatement{statements});
 }
     
-std::shared_ptr<Statement> Parser::ifStatement(bool executing){
+std::shared_ptr<Statement> Parser::ifStatement(){
     if(isAtEnd() && peek().tokenType != LEFT_PAREN) throw RuntimeError(peek(),"Expect '(' after 'if'.");
     advance();
     std::shared_ptr<Expression> condition = expression();
@@ -165,11 +226,11 @@ std::shared_ptr<Statement> Parser::ifStatement(bool executing){
 
 }
 
-std::shared_ptr<Statement> Parser::declaration(bool executing) {
+std::shared_ptr<Statement> Parser::declaration() {
     try {
-        if (match({VAR})) return varDeclaration(executing);
+        if (match({VAR})) return varDeclaration();
 
-        return statement(executing);
+        return statement();
     } catch (ParseError error) {
         Token t = peek();
         sync();
@@ -177,7 +238,7 @@ std::shared_ptr<Statement> Parser::declaration(bool executing) {
     }
 }
 
-std::shared_ptr<Statement> Parser::varDeclaration(bool executing){
+std::shared_ptr<Statement> Parser::varDeclaration(){
     if(!isAtEnd() && peek().tokenType == IDENTIFIER){
         Token name = advance();
         std::shared_ptr<Expression> initializer = nullptr;
@@ -201,7 +262,7 @@ std::shared_ptr<Statement> Parser::varDeclaration(bool executing){
 }  
 
 
-std::shared_ptr<Statement> Parser::expressionStatement(bool executing){
+std::shared_ptr<Statement> Parser::expressionStatement(){
     std::shared_ptr<Expression> expr = expression();
     if(executing && !match({SEMICOLON})){
         Token token = peek();

@@ -182,6 +182,11 @@ struct InterpreterVisitor{
             std::visit(*this,stmt.elseBranch->statement);
         }
     }
+    void operator()(const WhileStatement& stmt){
+        while(isTruthy(std::visit(*this,*stmt.condition))){
+            std::visit(*this,stmt.body->statement);
+        }
+    }
 };
 
 

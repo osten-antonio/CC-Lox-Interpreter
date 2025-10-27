@@ -20,6 +20,8 @@ private:
     int current = 0;
     bool match(std::vector<TokenType> types);
 
+    bool executing = true;
+
     std::shared_ptr<Expression> expression();
     std::shared_ptr<Expression> equality();
     std::shared_ptr<Expression> comparison();
@@ -32,14 +34,16 @@ private:
     std::shared_ptr<Expression> andOperator();   
     std::shared_ptr<Expression> assignment();
 
-    std::shared_ptr<Statement> statement(bool executing=true);
+    std::shared_ptr<Statement> statement();
     std::shared_ptr<Statement> printStatement();
-    std::shared_ptr<Statement> expressionStatement(bool executing=true);
-    std::shared_ptr<Statement> block(bool executing);
-    std::shared_ptr<Statement> ifStatement(bool executing);        
+    std::shared_ptr<Statement> whileStatement();
+    std::shared_ptr<Statement> forStatement();
+    std::shared_ptr<Statement> expressionStatement();
+    std::shared_ptr<Statement> block();
+    std::shared_ptr<Statement> ifStatement();        
 
-    std::shared_ptr<Statement> declaration(bool executing=true);
-    std::shared_ptr<Statement> varDeclaration(bool executing=true);
+    std::shared_ptr<Statement> declaration();
+    std::shared_ptr<Statement> varDeclaration();
     
     Token advance();
     Token peek();
