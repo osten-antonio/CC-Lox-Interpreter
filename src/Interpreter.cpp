@@ -135,6 +135,15 @@ struct InterpreterVisitor{
         environment->assign(expr.name,val);
         return val;
     }
+    Literal operator()(const LogicalExpression& expr){
+        Literal left = std::visit(*this,*expr.left);
+        if(expr.op.tokenType == OR){
+            if(isTruthy(left)) return left;
+        } else{
+            if(!isTruthy(left)) return left;
+        }
+        return std::visit(*this, *expr.right);
+    }
 
     // Statement visitors
     void operator()(const PrintStatement& stmt){
@@ -167,7 +176,13 @@ struct InterpreterVisitor{
     void operator()(const BlockStatement& stmt){
         executeBlock(stmt.Statements, std::make_shared<Environment>(this->environment));
     }
-
+    void operator()(const IfStatement& stmt){
+        if(isTruthy(std::visit(*this,*stmt.condition))){
+            std::visit(*this,stmt.thenBranch->statement);
+        } else if (stmt.elseBranch){
+            std::visit(*this,stmt.elseBranch->statement);
+        }
+    }
 };
 
 

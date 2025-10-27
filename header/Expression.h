@@ -12,6 +12,7 @@ struct LiteralExpression;
 struct GroupingExpression;
 struct VariableExpression;
 struct AssignmentExpression;
+struct LogicalExpression;
 
 using Expression = std::variant<
     BinaryExpression, 
@@ -19,8 +20,15 @@ using Expression = std::variant<
     LiteralExpression, 
     GroupingExpression, 
     VariableExpression,
-    AssignmentExpression
+    AssignmentExpression,
+    LogicalExpression
 >;
+
+struct LogicalExpression{
+    std::shared_ptr<Expression> left;
+    Token op;
+    std::shared_ptr<Expression> right;
+};
 
 struct BinaryExpression {
     std::shared_ptr<Expression> left;

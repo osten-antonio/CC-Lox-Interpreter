@@ -25,8 +25,14 @@ struct BlockStatement{
     std::vector<std::shared_ptr<Statement>> Statements;
 };
 
+struct IfStatement{
+    std::shared_ptr<Expression> condition;
+    std::shared_ptr<Statement> thenBranch;
+    std::shared_ptr<Statement> elseBranch;
+};
+
 struct Statement {
-    std::variant<ExpressionStatement, PrintStatement, VarStatement, BlockStatement> statement;
+    std::variant<ExpressionStatement, PrintStatement, VarStatement, BlockStatement, IfStatement> statement;
 };
 
 

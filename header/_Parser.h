@@ -27,17 +27,19 @@ private:
     std::shared_ptr<Expression> factor();
     std::shared_ptr<Expression> unary();
     std::shared_ptr<Expression> primary();
-    
+
+    std::shared_ptr<Expression> orOperator();  
+    std::shared_ptr<Expression> andOperator();   
     std::shared_ptr<Expression> assignment();
 
     std::shared_ptr<Statement> statement(bool executing=true);
     std::shared_ptr<Statement> printStatement();
     std::shared_ptr<Statement> expressionStatement(bool executing=true);
+    std::shared_ptr<Statement> block(bool executing);
+    std::shared_ptr<Statement> ifStatement(bool executing);        
 
     std::shared_ptr<Statement> declaration(bool executing=true);
     std::shared_ptr<Statement> varDeclaration(bool executing=true);
-    
-    std::shared_ptr<Statement> block(bool executing);
     
     Token advance();
     Token peek();

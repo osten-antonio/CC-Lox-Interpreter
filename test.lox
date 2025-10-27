@@ -1,13 +1,3 @@
-{
-    var bar = "outer quz";
-    var baz = "outer baz";
-    {
-        bar = "modified quz";
-        var baz = "inner baz";
-        print bar;
-        print baz;
-    }
-    print bar;
-    print baz;
-}
-print bar;
+var a=true;
+var b=false;
+if(a or b){print "yey";} 

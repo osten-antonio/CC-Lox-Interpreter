@@ -131,6 +131,7 @@ std::vector<std::shared_ptr<Statement>> Parser::parse(bool executing) {
 }
 
 std::shared_ptr<Statement> Parser::statement(bool executing){
+    if(match({IF})) return ifStatement(executing);
     if(match({PRINT})) return printStatement();
     if(match({LEFT_BRACE})) return block(executing);
     return expressionStatement(executing);
@@ -149,6 +150,20 @@ std::shared_ptr<Statement> Parser::block(bool executing){
     return std::make_shared<Statement>(BlockStatement{statements});
 }
     
+std::shared_ptr<Statement> Parser::ifStatement(bool executing){
+    if(isAtEnd() && peek().tokenType != LEFT_PAREN) throw RuntimeError(peek(),"Expect '(' after 'if'.");
+    advance();
+    std::shared_ptr<Expression> condition = expression();
+    if(isAtEnd() && peek().tokenType != RIGHT_PAREN) throw RuntimeError(peek(),"Expect '(' after 'if'.");
+    advance();
+
+    std::shared_ptr<Statement> thenBranch = statement();
+    std::shared_ptr<Statement> elseBranch;
+    if(match({ELSE})) elseBranch = statement();
+
+    return std::make_shared<Statement>(IfStatement{condition, thenBranch, elseBranch});
+
+}
 
 std::shared_ptr<Statement> Parser::declaration(bool executing) {
     try {
@@ -205,8 +220,28 @@ std::shared_ptr<Statement> Parser::printStatement(){
     return std::make_shared<Statement>(PrintStatement{expr});
 }
 
-std::shared_ptr<Expression> Parser::assignment(){
+std::shared_ptr<Expression> Parser::orOperator(){
+    std::shared_ptr<Expression> expr = andOperator();
+    while(match({OR})){
+        Token op = previous();
+        std::shared_ptr<Expression> right = andOperator();
+        expr = std::make_shared<Expression>(LogicalExpression{expr,op,right});
+    }
+    return expr;
+}
+
+std::shared_ptr<Expression> Parser::andOperator(){
     std::shared_ptr<Expression> expr = equality();
+    while(match({AND})){
+        Token op = previous();
+        std::shared_ptr<Expression> right = andOperator();
+        expr = std::make_shared<Expression>(LogicalExpression{expr,op,right});
+    }
+    return expr;
+}
+
+std::shared_ptr<Expression> Parser::assignment(){
+    std::shared_ptr<Expression> expr = orOperator();
     if(match({EQUAL})){
         Token equals = previous();
         std::shared_ptr<Expression> value = assignment();
