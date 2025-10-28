@@ -2,11 +2,11 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
-
 #include <memory>
 #include <exception>
-#include <Variable.h>
+#include <Declaration.h>
 #include <_error.h>
+
 
 Parser::Parser(std::vector<Token> _tokens):tokens(_tokens)
 {}
@@ -61,9 +61,34 @@ std::shared_ptr<Expression> Parser::unary() {
         std::shared_ptr<Expression> expr = unary();
         return std::make_shared<Expression>(UnaryExpression{op, expr});
     }
-    return primary();
+    return call();
 }
 
+std::shared_ptr<Expression> Parser::call() {
+    std::shared_ptr<Expression> expr = primary();
+    
+    while(true){
+        if(match({LEFT_PAREN})){
+            expr = finishCall(expr);
+        }else break;
+    }
+    return expr;
+}
+
+std::shared_ptr<Expression> Parser::finishCall(std::shared_ptr<Expression> expr){
+    std::vector<std::shared_ptr<Expression>> args;
+    if(!isAtEnd() && peek().tokenType !=RIGHT_PAREN){
+        do
+        {
+            if(args.size() >= 255) throw RuntimeError(peek(),"Can't have more than 255 arguments.");
+            args.push_back(expression());
+        } while (match({COMMA}));
+    }
+    if(isAtEnd() || peek().tokenType != RIGHT_PAREN) throw RuntimeError(peek(),"Expect ')' after 'arguments'.");
+    advance();
+    Token paren = previous();
+    return std::make_shared<Expression>(CallExpression{expr,paren,args});
+}
 
 bool Parser::isAtEnd(){
     return peek().tokenType == END_OF_FILE;
@@ -130,14 +155,54 @@ std::vector<std::shared_ptr<Statement>> Parser::parse(bool executing) {
     return statements;
 }
 
+std::shared_ptr<Statement> Parser::function(std::string kind){
+    if(isAtEnd() || peek().tokenType != IDENTIFIER) throw RuntimeError(peek(),"Expect " + kind + " after name.");
+    advance();
+    Token name = previous();
+    if(isAtEnd() || peek().tokenType != LEFT_PAREN) throw RuntimeError(peek(),"Expect '(' after " + kind + " name.");
+    advance();
+
+    std::vector<Token> params;
+    if(!isAtEnd() && peek().tokenType!=RIGHT_PAREN){
+        do{
+            if(params.size() >= 255) throw RuntimeError(peek(), "Can't have more than 255 parameters.");
+            if(isAtEnd() || peek().tokenType != IDENTIFIER) throw RuntimeError(peek(),"Expect parameter name.");
+            advance();
+            params.push_back(previous());
+            
+        } while(match({COMMA}));
+    }
+    if(isAtEnd() || peek().tokenType != RIGHT_PAREN) throw RuntimeError(peek(),"Expect ')' after parameters.");
+    advance();
+    if(isAtEnd() || peek().tokenType != LEFT_BRACE) throw RuntimeError(peek(),"Expect '{' before "+ kind+ " body.");
+    advance();
+    std::shared_ptr<Statement> body = block();
+    funDecl decl{name, params, body};
+    return std::make_shared<Statement>(FuncStatement{decl});
+}
+
 std::shared_ptr<Statement> Parser::statement(){
+    if(match({FUN})) return function("function");
     if(match({FOR})) return forStatement();
     if(match({WHILE})) return whileStatement();
     if(match({IF})) return ifStatement();
     if(match({PRINT})) return printStatement();
+    if(match({RETURN})) return returnStatement();
     if(match({LEFT_BRACE})) return block();
     return expressionStatement();
 }   
+
+std::shared_ptr<Statement> Parser::returnStatement(){
+    Token keyword = previous();
+    std::shared_ptr<Expression> val;
+    if(isAtEnd() || peek().tokenType != SEMICOLON){
+        val = expression();
+    }
+    if(isAtEnd() || peek().tokenType != SEMICOLON) throw RuntimeError(peek(),"Expect ';' after loop condition.");
+    advance();
+    return std::make_shared<Statement>(ReturnStatement{keyword,val});
+
+}
 
 std::shared_ptr<Statement> Parser::forStatement(){
     if(isAtEnd() || peek().tokenType != LEFT_PAREN) throw RuntimeError(peek(),"Expect '(' after 'for'.");

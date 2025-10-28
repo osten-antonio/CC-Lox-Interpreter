@@ -3,10 +3,15 @@
 
 
 #include <Expression.h>
-#include <Variable.h>
+#include <Declaration.h>
 #include <vector>
 
 struct Statement;
+
+struct ReturnStatement{
+    Token keyword;
+    std::shared_ptr<Expression> val;
+};
 
 struct ExpressionStatement {
     std::shared_ptr<Expression> expression;
@@ -43,6 +48,10 @@ struct ForStatement{
     std::shared_ptr<Statement> body;
 };
 
+struct FuncStatement{
+    funDecl func;
+};
+
 struct Statement {
     std::variant<
         ExpressionStatement, 
@@ -50,7 +59,9 @@ struct Statement {
         VarStatement, 
         BlockStatement, 
         IfStatement, 
-        WhileStatement
+        WhileStatement,
+        ReturnStatement,
+        FuncStatement
     > statement;
 
 };

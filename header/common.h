@@ -6,6 +6,10 @@
 #include <variant>
 #include <sstream>
 #include <iomanip>
+#include <memory>
+
+struct LoxCallable;
+struct LoxFunction;
 
 enum ErrorType{
     NONE,
@@ -63,7 +67,7 @@ enum TokenType
 
 };
 
-using Literal = std::variant<std::monostate, std::string, double, bool>;
+using Literal = std::variant<std::monostate, std::string, double, bool, std::shared_ptr<LoxCallable>>;
 
 
 static std::string literalToString(const std::string& lexeme, const Literal& literal) {
@@ -85,6 +89,9 @@ static std::string literalToString(const std::string& lexeme, const Literal& lit
         }
     } else if (std::holds_alternative<std::string>(literal)) {
         return std::get<std::string>(literal);
+    }
+    else if (std::holds_alternative<std::shared_ptr<LoxCallable>>(literal)) {
+        return "<fn>";
     }
     return literalString;
 }

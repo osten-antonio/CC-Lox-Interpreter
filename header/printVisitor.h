@@ -34,6 +34,9 @@ struct PrintVisitor {
     std::string operator()(const LogicalExpression& expr) {
         return expr.op.lexeme;
     }
+    std::string operator()(const CallExpression& expr) {
+        return expr.paren.lexeme;
+    }
 };
 
 #endif

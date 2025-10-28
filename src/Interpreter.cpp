@@ -3,10 +3,16 @@
 #include <exception>
 #include <Statement.h>
 #include <_error.h>
+#include <NativeFunc.h>
+#include <Return.h>
+#include <LoxFunction.h>
 
 struct InterpreterVisitor{
     std::shared_ptr<Environment> environment;
-    InterpreterVisitor(Environment env) : environment(std::make_shared<Environment>(env)) {}
+    Interpreter& interpreter;
+
+    InterpreterVisitor(Interpreter& interp, std::shared_ptr<Environment> env)
+        : interpreter(interp), environment(env) {}    
     bool isEqual(Literal a, Literal b){
         if(std::holds_alternative<std::monostate>(a) && std::holds_alternative<std::monostate>(b)) return true;
         if(std::holds_alternative<std::monostate>(a)) return false;
@@ -143,26 +149,36 @@ struct InterpreterVisitor{
         }
         return std::visit(*this, *expr.right);
     }
+    
+    Literal operator()(const CallExpression& expr){
+        Literal callee = std::visit(*this,*expr.callee);
+        std::vector<Literal> args;
+        for(std::shared_ptr<Expression> arg: expr.args){
+            args.push_back(std::visit(*this,*arg));
+        }
+        std::shared_ptr<LoxCallable> function;
+
+        if(!std::holds_alternative<std::shared_ptr<LoxCallable>>(callee)){
+            throw RuntimeError(expr.paren,"Can only call functions and classes.");
+        }
+
+        function = std::get<std::shared_ptr<LoxCallable>>(callee);
+
+        if(args.size() != function->arity()){
+            throw RuntimeError(
+                expr.paren,"Expected "+std::to_string(function->arity())+" arguments but got "+std::to_string(args.size()) + ".");
+        }
+        return function->call(interpreter, args);
+
+    }
 
     // Statement visitors
     void operator()(const PrintStatement& stmt){
-        Literal val = std::visit(*this,*stmt.expression);
-        std::cout << std::visit([&](auto&& arg) {
-            using T = std::decay_t<decltype(arg)>;
-            if constexpr (std::is_same_v<T, std::monostate>) {
-                return std::string("nil\n");
-            } else if constexpr (std::is_same_v<T, bool>) {
-                return std::string(arg ? "true\n" : "false\n");
-            } else if constexpr (std::is_same_v<T, std::string>){
-                return arg + '\n';
-            } else if constexpr (std::is_same_v<T, double>){
-                std::ostringstream oss;
-                oss << std::setprecision(15);
-                oss << arg;
-                std::string s = oss.str();
-                return s+'\n';
-            }
-        },val);
+        Literal val = std::visit(*this,*stmt.expression);   
+        std::variant<std::string,std::monostate> intered =  interpreter.getVal(val);
+        if(std::holds_alternative<std::string>(intered)){
+            std::cout << std::get<std::string>(intered);
+        }
     }
     void operator()(const ExpressionStatement& stmt){
         std::visit(*this,*stmt.expression);
@@ -187,11 +203,25 @@ struct InterpreterVisitor{
             std::visit(*this,stmt.body->statement);
         }
     }
+    void operator()(const FuncStatement& stmt){
+        LoxFunction func{std::make_shared<Statement>(stmt),environment};
+        environment->define(stmt.func.name.lexeme, 
+            std::static_pointer_cast<LoxCallable>(std::make_shared<LoxFunction>(func)));
+    }
+    void operator()(const ReturnStatement& stmt){
+        Literal val;
+        if(stmt.val) val = std::visit(*this,*stmt.val);
+        throw Return(val);
+    }
 };
+
+Interpreter::Interpreter(){
+    globals->define("clock", std::make_shared<ClockFunction>());
+}
 
 
 void Interpreter::interpretStatements(std::vector<std::shared_ptr<Statement>> stmts){
-    InterpreterVisitor visitor(environment);
+    InterpreterVisitor visitor(*this,environment);
     for(std::shared_ptr<Statement> stmt:stmts){
         try{
             std::visit(visitor, stmt->statement);
@@ -202,11 +232,15 @@ void Interpreter::interpretStatements(std::vector<std::shared_ptr<Statement>> st
     }
 }
 
+void Interpreter::executeBlock(std::shared_ptr<Statement> body, std::shared_ptr<Environment> env){
+    InterpreterVisitor visitor(*this,env);
+    if(std::holds_alternative<BlockStatement>(body->statement)){
+        visitor.executeBlock(std::get<BlockStatement>(body->statement).Statements,env);
+    }
+}
 
-std::variant<std::string,std::monostate> Interpreter::interpret(const Expression& expr){
-    try{
-        Literal value = evaluate(expr);
-        return std::visit([&](auto&& arg) {
+std::variant<std::string,std::monostate> Interpreter::getVal(Literal value){
+    return std::visit([&](auto&& arg) {
             using T = std::decay_t<decltype(arg)>;
             if constexpr (std::is_same_v<T, std::monostate>) {
                 return std::string("nil\n");
@@ -221,8 +255,16 @@ std::variant<std::string,std::monostate> Interpreter::interpret(const Expression
                 std::string s = oss.str();
 
                 return s+'\n';
+            } else if constexpr (std::is_same_v<T, std::shared_ptr<LoxCallable>>) {
+                return std::string(arg->toString()+'\n');
             }
         }, value);
+}
+
+std::variant<std::string,std::monostate> Interpreter::interpret(const Expression& expr){
+    try{
+        Literal value = evaluate(expr);
+        return getVal(value);
         
     } catch (RuntimeError e){
         std::cerr << "[line " << e.token._line <<"] " << e.message << '\n';
@@ -232,6 +274,6 @@ std::variant<std::string,std::monostate> Interpreter::interpret(const Expression
 }
 
 Literal Interpreter::evaluate(const Expression& expr){
-    InterpreterVisitor visitor(environment);
+    InterpreterVisitor visitor(*this,environment);
     return std::visit(visitor,expr);
 }

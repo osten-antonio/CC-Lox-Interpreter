@@ -30,6 +30,9 @@ private:
     std::shared_ptr<Expression> unary();
     std::shared_ptr<Expression> primary();
 
+    std::shared_ptr<Expression> call();
+    std::shared_ptr<Expression> finishCall(std::shared_ptr<Expression> expr);
+
     std::shared_ptr<Expression> orOperator();  
     std::shared_ptr<Expression> andOperator();   
     std::shared_ptr<Expression> assignment();
@@ -41,6 +44,8 @@ private:
     std::shared_ptr<Statement> expressionStatement();
     std::shared_ptr<Statement> block();
     std::shared_ptr<Statement> ifStatement();        
+    std::shared_ptr<Statement> returnStatement();
+    std::shared_ptr<Statement> function(std::string kind);
 
     std::shared_ptr<Statement> declaration();
     std::shared_ptr<Statement> varDeclaration();
