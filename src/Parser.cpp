@@ -80,11 +80,11 @@ std::shared_ptr<Expression> Parser::finishCall(std::shared_ptr<Expression> expr)
     if(!isAtEnd() && peek().tokenType !=RIGHT_PAREN){
         do
         {
-            if(args.size() >= 255) throw RuntimeError(peek(),"Can't have more than 255 arguments.");
+            if(args.size() >= 255) throw ParseError(peek()._line,peek().lexeme,"Can't have more than 255 arguments.");
             args.push_back(expression());
         } while (match({COMMA}));
     }
-    if(isAtEnd() || peek().tokenType != RIGHT_PAREN) throw RuntimeError(peek(),"Expect ')' after 'arguments'.");
+    if(isAtEnd() || peek().tokenType != RIGHT_PAREN) throw ParseError(peek()._line,peek().lexeme,"Expect ')' after 'arguments'.");
     advance();
     Token paren = previous();
     return std::make_shared<Expression>(CallExpression{expr,paren,args});
@@ -156,25 +156,25 @@ std::vector<std::shared_ptr<Statement>> Parser::parse(bool executing) {
 }
 
 std::shared_ptr<Statement> Parser::function(std::string kind){
-    if(isAtEnd() || peek().tokenType != IDENTIFIER) throw RuntimeError(peek(),"Expect " + kind + " after name.");
+    if(isAtEnd() || peek().tokenType != IDENTIFIER) throw ParseError(peek()._line,peek().lexeme,"Expect " + kind + " after name.");
     advance();
     Token name = previous();
-    if(isAtEnd() || peek().tokenType != LEFT_PAREN) throw RuntimeError(peek(),"Expect '(' after " + kind + " name.");
+    if(isAtEnd() || peek().tokenType != LEFT_PAREN) throw ParseError(peek()._line,peek().lexeme,"Expect '(' after " + kind + " name.");
     advance();
 
     std::vector<Token> params;
     if(!isAtEnd() && peek().tokenType!=RIGHT_PAREN){
         do{
-            if(params.size() >= 255) throw RuntimeError(peek(), "Can't have more than 255 parameters.");
+            if(params.size() >= 255) throw ParseError(peek()._line,peek().lexeme, "Can't have more than 255 parameters.");
             if(isAtEnd() || peek().tokenType != IDENTIFIER) throw RuntimeError(peek(),"Expect parameter name.");
             advance();
             params.push_back(previous());
             
         } while(match({COMMA}));
     }
-    if(isAtEnd() || peek().tokenType != RIGHT_PAREN) throw RuntimeError(peek(),"Expect ')' after parameters.");
+    if(isAtEnd() || peek().tokenType != RIGHT_PAREN) throw ParseError(peek()._line,peek().lexeme,"Expect ')' after parameters.");
     advance();
-    if(isAtEnd() || peek().tokenType != LEFT_BRACE) throw RuntimeError(peek(),"Expect '{' before "+ kind+ " body.");
+    if(isAtEnd() || peek().tokenType != LEFT_BRACE) throw ParseError(peek()._line,peek().lexeme,"Expect '{' before "+ kind+ " body.");
     advance();
     std::shared_ptr<Statement> body = block();
     funDecl decl{name, params, body};
@@ -198,14 +198,14 @@ std::shared_ptr<Statement> Parser::returnStatement(){
     if(isAtEnd() || peek().tokenType != SEMICOLON){
         val = expression();
     }
-    if(isAtEnd() || peek().tokenType != SEMICOLON) throw RuntimeError(peek(),"Expect ';' after loop condition.");
+    if(isAtEnd() || peek().tokenType != SEMICOLON) throw ParseError(peek()._line,peek().lexeme,"Expect ';' after loop condition.");
     advance();
     return std::make_shared<Statement>(ReturnStatement{keyword,val});
 
 }
 
 std::shared_ptr<Statement> Parser::forStatement(){
-    if(isAtEnd() || peek().tokenType != LEFT_PAREN) throw RuntimeError(peek(),"Expect '(' after 'for'.");
+    if(isAtEnd() || peek().tokenType != LEFT_PAREN) throw ParseError(peek()._line,peek().lexeme,"Expect '(' after 'for'.");
     advance();
 
     std::shared_ptr<Statement> initializer;
@@ -220,14 +220,14 @@ std::shared_ptr<Statement> Parser::forStatement(){
     if(!isAtEnd() && peek().tokenType !=SEMICOLON){
         condition = expression();
     }
-    if(isAtEnd() || peek().tokenType != SEMICOLON) throw RuntimeError(peek(),"Expect ';' after loop condition.");
+    if(isAtEnd() || peek().tokenType != SEMICOLON) throw ParseError(peek()._line,peek().lexeme,"Expect ';' after loop condition.");
     advance();
 
     std::shared_ptr<Expression> increment;
     if(!isAtEnd() && peek().tokenType !=RIGHT_PAREN){
         increment = expression();
     }
-    if(isAtEnd() || peek().tokenType != RIGHT_PAREN) throw RuntimeError(peek(),"Expect ';' after for clauses.");
+    if(isAtEnd() || peek().tokenType != RIGHT_PAREN) throw ParseError(peek()._line,peek().lexeme,"Expect ';' after for clauses.");
     advance();
     std::shared_ptr<Statement> body = statement();
 
@@ -253,10 +253,10 @@ std::shared_ptr<Statement> Parser::forStatement(){
 }
 
 std::shared_ptr<Statement> Parser::whileStatement(){
-    if(isAtEnd() && peek().tokenType != LEFT_PAREN) throw RuntimeError(peek(),"Expect '(' after 'while'.");
+    if(isAtEnd() && peek().tokenType != LEFT_PAREN) throw ParseError(peek()._line,peek().lexeme,"Expect '(' after 'while'.");
     advance();
     std::shared_ptr<Expression> expr = expression();
-    if(isAtEnd() && peek().tokenType != RIGHT_PAREN) throw RuntimeError(peek(),"Expect ')' after 'while'.");
+    if(isAtEnd() && peek().tokenType != RIGHT_PAREN) throw ParseError(peek()._line,peek().lexeme,"Expect ')' after 'while'.");
     advance();
     std::shared_ptr<Statement> stmt = statement();
     return std::make_shared<Statement>(WhileStatement{expr,stmt});
@@ -277,10 +277,10 @@ std::shared_ptr<Statement> Parser::block(){
 }
     
 std::shared_ptr<Statement> Parser::ifStatement(){
-    if(isAtEnd() && peek().tokenType != LEFT_PAREN) throw RuntimeError(peek(),"Expect '(' after 'if'.");
+    if(isAtEnd() && peek().tokenType != LEFT_PAREN) throw ParseError(peek()._line,peek().lexeme,"Expect '(' after 'if'.");
     advance();
     std::shared_ptr<Expression> condition = expression();
-    if(isAtEnd() && peek().tokenType != RIGHT_PAREN) throw RuntimeError(peek(),"Expect '(' after 'if'.");
+    if(isAtEnd() && peek().tokenType != RIGHT_PAREN) throw ParseError(peek()._line,peek().lexeme,"Expect '(' after 'if'.");
     advance();
 
     std::shared_ptr<Statement> thenBranch = statement();
@@ -314,7 +314,7 @@ std::shared_ptr<Statement> Parser::varDeclaration(){
             advance();
         }
         else{
-            throw RuntimeError(peek(),"Expect ';' after variable declaration.");
+            throw ParseError(peek()._line,peek().lexeme,"Expect ';' after variable declaration.");
         }
         varDecl decl{name.lexeme, initializer};
         VarStatement stmt{name.lexeme, initializer};
