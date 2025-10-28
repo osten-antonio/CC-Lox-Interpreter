@@ -138,7 +138,7 @@ int main(int argc, char *argv[]) {
             std::cerr << "[line " <<e.line<<"] " <<e.message <<'\n';
             hadError=true;
         }catch(RuntimeError e){
-            return 70;
+            return 65;
         }
         
 
