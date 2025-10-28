@@ -101,7 +101,7 @@ int main(int argc, char *argv[]) {
             if (statements.empty()) return 65;
             Interpreter interpreter;
             for (std::shared_ptr<Statement>& stmt : statements) {
-                if (!stmt) return 70;
+                if (!stmt) return 65;
                 if(std::holds_alternative<ExpressionStatement>(stmt->statement)){
                     // im going to kms
                     std::variant<std::string,std::monostate> interpreted = interpreter.interpret(
@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
             
         } catch(ParseError e){
             std::cerr << "[line " <<e.line<<"] " <<e.message <<'\n';
-            return 65;
+            hadError=true;
         } catch(RuntimeError e){
             return 70;
         }
