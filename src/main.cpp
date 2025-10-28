@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
             
         } catch(ParseError e){
             std::cerr << "[line " <<e.line<<"] " <<e.message <<'\n';
-            hadError=true;
+            return 65;
         } catch(RuntimeError e){
             return 70;
         }
@@ -132,11 +132,11 @@ int main(int argc, char *argv[]) {
                 Interpreter interpreter;
                 interpreter.interpretStatements(statements);
             } else {
-                hadError=true; 
+                return 65;
             }
         }catch(ParseError e){
             std::cerr << "[line " <<e.line<<"] " <<e.message <<'\n';
-            hadError=true;
+            return 65;
         }catch(RuntimeError e){
             return 70;
         }
