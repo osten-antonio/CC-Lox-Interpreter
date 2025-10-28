@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
             
         } catch(ParseError e){
             std::cerr << "[line " <<e.line<<"] " <<e.message <<'\n';
-            return 70;
+            return 65;
         } catch(RuntimeError e){
             return 70;
         }
@@ -138,7 +138,7 @@ int main(int argc, char *argv[]) {
             std::cerr << "[line " <<e.line<<"] " <<e.message <<'\n';
             hadError=true;
         }catch(RuntimeError e){
-            return 65;
+            return 70;
         }
         
 
